@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useNavigate, useLocation } from 'react-router-dom';
+import WeeklyGoalsAction from "./WeeklyGoalsAction";
 import '../App.css'
 
 interface WeekDetail {
@@ -54,6 +55,18 @@ const WeeklySummaryEntry: React.FC = () => {
     const [summarySections, setSummarySections] = useState([
       { selectedProject: 'Project 1', summaries: ['', '', '', ''] }
     ]);
+
+    // Create refs for each section and each summary box
+    const summaryRefs = useRef<Array<Array<HTMLDivElement | null>>>([]);
+    // Ensure refs array matches the number of sections and boxes
+    useEffect(() => {
+      summaryRefs.current = summarySections.map(
+        (section, sectionIdx) =>
+          section.summaries.map((_, summaryIdx) =>
+            summaryRefs.current[sectionIdx]?.[summaryIdx] || null
+          )
+      );
+    }, [summarySections.length]);
 
     useEffect(() => {
       const stored = localStorage.getItem('weekDetails');
@@ -139,87 +152,6 @@ const WeeklySummaryEntry: React.FC = () => {
       setSummaryFocus(updated);
     };
 
-    const handleBulletPoint = (index: number) => {
-      // Use execCommand for bullet points, similar to bold/italic/underline
-      // This approach works better with contentEditable and doesn't interfere with deletion
-      
-      // First, ensure the text area is focused
-      const textArea = document.querySelector(`[data-textarea-index="${index}"]`) as HTMLDivElement;
-      if (textArea) {
-        textArea.focus();
-        
-        // Check if there's selected text
-        const selection = window.getSelection();
-        if (selection && selection.rangeCount > 0) {
-          const range = selection.getRangeAt(0);
-          
-          if (!range.collapsed) {
-            // If text is selected, convert to bullet points
-            const selectedText = range.toString();
-            const lines = selectedText.split('\n');
-            const bulletedLines = lines.map(line => line.trim() ? `• ${line.trim()}` : '').join('\n');
-            
-            // Use execCommand to insert the bulleted text
-            document.execCommand('insertText', false, bulletedLines);
-          } else {
-            // If no text is selected, insert bullet point at cursor
-            // Check if we're at the beginning of a line
-            const currentText = textArea.textContent || '';
-            const cursorPosition = getCursorPosition(textArea);
-            const isAtLineStart = isAtBeginningOfLine(currentText, cursorPosition);
-            
-            if (isAtLineStart) {
-              // Insert bullet point at current position
-              document.execCommand('insertText', false, '• ');
-            } else {
-              // Insert new line with bullet point
-              document.execCommand('insertText', false, '\n• ');
-            }
-          }
-        }
-      }
-    };
-
-    const getCursorPosition = (element: HTMLElement): number => {
-      const selection = window.getSelection();
-      if (selection && selection.rangeCount > 0) {
-        const range = selection.getRangeAt(0);
-        const preCaretRange = range.cloneRange();
-        preCaretRange.selectNodeContents(element);
-        preCaretRange.setEnd(range.endContainer, range.endOffset);
-        return preCaretRange.toString().length;
-      }
-      return 0;
-    };
-
-    const isAtBeginningOfLine = (text: string, position: number): boolean => {
-      if (position === 0) return true;
-      
-      const beforeCursor = text.substring(0, position);
-      const lines = beforeCursor.split('\n');
-      const currentLine = lines[lines.length - 1];
-      
-      return currentLine === '';
-    };
-
-    const handleFormatting = (index: number, format: 'bold' | 'italic' | 'underline') => {
-      // Toggle the formatting state
-      setFormattingStates(prev => ({
-        ...prev,
-        [index]: {
-          ...prev[index],
-          [format]: !prev[index]?.[format]
-        }
-      }));
-
-      // Apply or remove the formatting
-      document.execCommand(format, false, undefined);
-    };
-
-    const getFormattingState = (index: number, format: 'bold' | 'italic' | 'underline') => {
-      return formattingStates[index]?.[format] || false;
-    };
-
     // Handler to add a new summary section
     const handleAddMore = () => {
       setSummarySections([
@@ -248,18 +180,58 @@ const WeeklySummaryEntry: React.FC = () => {
       );
     };
 
-    // const totals = weekDetails.reduce(
-    //   (acc, row) => {
-    //     acc.WD += Number(row.WD) || 0;
-    //     acc.H += Number(row.H) || 0;
-    //     acc.L += Number(row.L) || 0;
-    //     acc.WFH += Number(row.WFH) || 0;
-    //     acc.WFO += Number(row.WFO) || 0;
-    //     acc.ED += Number(row.ED) || 0;
-    //     return acc;
-    //   },
-    //   { WD: 0, H: 0, L: 0, WFH: 0, WFO: 0, ED: 0 }
-    // );
+    // Formatting handlers using refs
+    const handleFormatting = (sectionIdx: number, summaryIdx: number, format: 'bold' | 'italic' | 'underline') => {
+      const ref = summaryRefs.current[sectionIdx]?.[summaryIdx];
+      if (ref) {
+        ref.focus();
+        document.execCommand(format, false, undefined);
+      }
+    };
+
+    const handleBulletPoint = (sectionIdx: number, summaryIdx: number) => {
+      const ref = summaryRefs.current[sectionIdx]?.[summaryIdx];
+      if (ref) {
+        ref.focus();
+        document.execCommand('insertUnorderedList', false, undefined);
+      }
+    };
+
+    // On blur, update state with the current HTML
+    const handleBlur = (sectionIdx: number, summaryIdx: number) => {
+      const ref = summaryRefs.current[sectionIdx]?.[summaryIdx];
+      if (ref) {
+        updateSummary(sectionIdx, summaryIdx, ref.innerHTML);
+      }
+    };
+
+    const getCursorPosition = (element: HTMLElement): number => {
+      const selection = window.getSelection();
+      if (selection && selection.rangeCount > 0) {
+        const range = selection.getRangeAt(0);
+        const preCaretRange = range.cloneRange();
+        preCaretRange.selectNodeContents(element);
+        preCaretRange.setEnd(range.endContainer, range.endOffset);
+        return preCaretRange.toString().length;
+      }
+      return 0;
+    };
+
+    const isAtBeginningOfLine = (text: string, position: number): boolean => {
+      if (position === 0) return true;
+      
+      const beforeCursor = text.substring(0, position);
+      const lines = beforeCursor.split('\n');
+      const currentLine = lines[lines.length - 1];
+      
+      return currentLine === '';
+    };
+
+    const getFormattingState = (index: number, format: 'bold' | 'italic' | 'underline') => {
+      return formattingStates[index]?.[format] || false;
+    };
+
+  
 
   return (
     <div>
@@ -407,101 +379,50 @@ const WeeklySummaryEntry: React.FC = () => {
  <div className="bg-white rounded-md shadow p-6 mt-8">
         <div className="flex justify-between bg-blue-900 rounded-t-md items-center">
           <h2 className="text-lg font-bold text-white bg-blue-900 px-4 py-2 rounded-t-md">Weekly Summary</h2>
-          <button
+          {/* <button
             className="ml-4 bg-blue-700 hover:bg-blue-400 text-white font-semibold px-4 py-2 mr-1 rounded shadow"
             onClick={handleAddMore}
           >
             Add More
-          </button>
+          </button> */}
         </div>
-        {summarySections.map((section, sectionIdx) => (
-          <div key={sectionIdx} className="flex flex-col sm:flex-row sm:items-start sm:gap-6 mt-4">
-            {/* Project Dropdown */}
-            <div className="mb-4 sm:mb-0 sm:w-48">
-              <label className="block font-semibold mb-2 text-sm">Project</label>
-              <select
-                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500"
-                value={section.selectedProject}
-                onChange={e => updateSection(sectionIdx, 'selectedProject', e.target.value)}
-              >
-                <option value="Project 1">Project 1</option>
-                <option value="Project 2">Project 2</option>
-                <option value="Project 3">Project 3</option>
-              </select>
-            </div>
-            {/* Summary Boxes */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 flex-1">
-              {section.summaries.map((text, index) => (
-                <div key={index} className="relative">
-                  <label className="block font-semibold mb-2 text-sm">
-                    {['Tasks Performed', 'Challenges', 'Unfinished Tasks', 'Next Actions'][index]}
-                  </label>
-                  {/* Show selected project above each box */}
-                  <div className="text-xs text-blue-700 font-semibold mb-1">{section.selectedProject}</div>
-                  <div className="flex gap-2 mb-1">
-                    <button
-                      type="button"
-                      onClick={() => handleFormatting(index, 'bold')}
-                      className={`text-sm px-2 py-1 border rounded font-bold transition-colors ${
-                        getFormattingState(index, 'bold')
-                          ? 'bg-blue-500 text-white hover:bg-blue-600'
-                          : 'bg-gray-100 hover:bg-gray-200'
-                      }`}
-                      title="Bold"
-                    >B</button>
-                    <button
-                      type="button"
-                      onClick={() => handleFormatting(index, 'italic')}
-                      className={`text-sm px-2 py-1 border rounded italic transition-colors ${
-                        getFormattingState(index, 'italic')
-                          ? 'bg-blue-500 text-white hover:bg-blue-600'
-                          : 'bg-gray-100 hover:bg-gray-200'
-                      }`}
-                      title="Italic"
-                    >I</button>
-                    <button
-                      type="button"
-                      onClick={() => handleFormatting(index, 'underline')}
-                      className={`text-sm px-2 py-1 border rounded underline transition-colors ${
-                        getFormattingState(index, 'underline')
-                          ? 'bg-blue-500 text-white hover:bg-blue-600'
-                          : 'bg-gray-100 hover:bg-gray-200'
-                      }`}
-                      title="Underline"
-                    >U</button>
-                    <button
-                      type="button"
-                      onClick={() => handleBulletPoint(index)}
-                      className="text-sm px-2 py-1 border rounded bg-gray-100 hover:bg-gray-200 transition-colors"
-                      title="Bullet Point"
-                    >•</button>
-                  </div>
-                  <div className="relative">
-                    <div
-                      contentEditable
-                      suppressContentEditableWarning
-                      className="min-h-[180px] border border-blue-900 bg-orange-100 rounded-md p-3 text-sm leading-relaxed shadow-inner overflow-y-auto resize-y focus:outline-none"
-                      style={{ whiteSpace: 'pre-wrap' }}
-                      data-textarea-index={index}
-                      onInput={e => updateSummary(sectionIdx, index, (e.target as HTMLDivElement).innerHTML)}
-                      onFocus={() => handleSummaryFocus(index)}
-                      onBlur={() => handleSummaryBlur(index)}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Backspace' || e.key === 'Delete') {
-                          return;
-                        }
-                      }}
-                      spellCheck={true}
-                      tabIndex={0}
-                      dangerouslySetInnerHTML={{ __html: text }}
-                    />
-                  </div>
-                </div>
-              ))}
-            </div>
+        {/* Four labeled textarea boxes below the summary header, all on a single line */}
+        <div className="flex flex-col md:flex-row gap-6 mt-6">
+          <div className="flex-1 min-w-0">
+            <label className="block border border-blue-300 p-2 bg-blue-300 rounded-t-md text-sm font-semibold mb-1" htmlFor="achievement-summary">Achievement Summary</label>
+            <textarea
+              id="achievement-summary"
+              className="w-full min-h-[80px] border border-gray-300 mt-2 rounded-md p-2 focus:ring-2 focus:ring-blue-500"
+              placeholder="List key accomplishments, deliverables, etc."
+            />
           </div>
-        ))}
+          <div className="flex-1 min-w-0">
+            <label className="block border border-blue-300 p-2 bg-blue-300 rounded-t-md text-sm font-semibold mb-1" htmlFor="roadblocks">Road Blocks/Challenges</label>
+            <textarea
+              id="roadblocks"
+              className="w-full min-h-[80px] border border-gray-300 mt-2 rounded-md p-2 focus:ring-2 focus:ring-blue-500"
+              placeholder="Mention any blockers, dependencies or issues."
+            />
+          </div>
+          <div className="flex-1 min-w-0">
+            <label className="block border border-blue-300 p-2 bg-blue-300 rounded-t-md text-sm font-semibold mb-1" htmlFor="next-action">Next action plan</label>
+            <textarea
+              id="next-action"
+              className="w-full min-h-[80px] border border-gray-300 mt-2 rounded-md p-2 focus:ring-2 focus:ring-blue-500"
+              placeholder="Plan for next sprint/week."
+            />
+          </div>
+          <div className="flex-1 min-w-0">
+            <label className="block border border-blue-300 p-2 bg-blue-300 rounded-t-md text-sm font-semibold mb-1" htmlFor="unfinished-tasks">Unfinished Tasks</label>
+            <textarea
+              id="unfinished-tasks"
+              className="w-full min-h-[80px] border border-gray-300 mt-2 rounded-md p-2 focus:ring-2 focus:ring-blue-500"
+              placeholder="Carry-forward or uncompleted tasks."
+            />
+          </div>
+        </div>
       </div>
+      <WeeklyGoalsAction/>
 </div>
 
 

@@ -49,6 +49,19 @@ const WeeklyGoalsAction: React.FC = () => {
   const [myOwnOrange, setMyOwnOrange] = useState(false);
   const [activityProject, setActivityProject] = useState("Project");
   const [activityInfo, setActivityInfo] = useState(["", "", ""]);
+  // State to track which row is selected for the main table
+  const [selectedRow, setSelectedRow] = useState(mockRows[0]);
+  const [goalsActivities, setGoalsActivities] = useState("");
+  const [roadblocks, setRoadblocks] = useState("");
+  const [pendingWork, setPendingWork] = useState("");
+  const [nextActions, setNextActions] = useState("");
+  const [teamMembers, setTeamMembers] = useState("");
+  const [overallStatus, setOverallStatus] = useState("In Progress");
+  const [efforts, setEfforts] = useState("");
+  const [projectTrackerInfo, setProjectTrackerInfo] = useState("");
+  const [myOwnRatingField, setMyOwnRatingField] = useState("Green");
+  const [auditorRating, setAuditorRating] = useState("");
+  const [auditorComments, setAuditorComments] = useState("");
 
   return (
     <div className="flex h-screen bg-gray-100">
@@ -86,9 +99,7 @@ const WeeklyGoalsAction: React.FC = () => {
               </div>
             </div>
 
-            <select className="text-sm p-2 mt-2 border rounded">
-              <option>Week #19 (13 Apr 2025 - 19 Apr 2025)</option>
-            </select>
+           
           </div>
 
           <div>
@@ -109,148 +120,141 @@ const WeeklyGoalsAction: React.FC = () => {
                 </tr>
               </thead>
               <tbody>
-                <tr className="hover:bg-blue-50">
-                  <td className="border p-2">Feature Delivery</td>
-                  <td className="border p-2">
-                    Ensure timely and efficient delivery of customer-committed features (Deliver committed features to production as per sprint/release plans)
-                  </td>
-                  <td className="border p-2">&ge; 90%</td>
-                  <td className="border p-2">%</td>
-                  <td className="border p-2">Monthly</td>
-                  <td className="border p-2">Sprint/Release Tracker / JIRA/ Azure DevOps</td>
-                  <td className="border p-2">&lt; 80%</td>
-                  <td className="border p-2">80–89%</td>
-                  <td className="border p-2">100</td>
-                  <td className="border p-2">
-                    <select className="text-sm border rounded p-1">
-                      <option>Green</option>
-                      <option>Orange</option>
-                      <option>Red</option>
-                    </select>
-                  </td>
-                  <td className="border p-2">
-                    <button className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 text-sm rounded">My Actions</button>
-                  </td>
-                </tr>
+                {selectedRow && (
+                  <tr className="hover:bg-blue-50">
+                    <td className="border p-2">{selectedRow.title}</td>
+                    <td className="border p-2">{selectedRow.description}</td>
+                    <td className="border p-2">{selectedRow.target}</td>
+                    <td className="border p-2">{selectedRow.uom}</td>
+                    <td className="border p-2">{selectedRow.period}</td>
+                    <td className="border p-2">{selectedRow.dataSource}</td>
+                    <td className="border p-2">{selectedRow.red}</td>
+                    <td className="border p-2">{selectedRow.orange}</td>
+                    <td className="border p-2">{selectedRow.effort}</td>
+                    <td className="border p-2">
+                      {selectedRow.rating === 'Green' && (
+                        <span className="inline-block w-4 h-4 rounded-full bg-green-500 align-middle" title="Green"></span>
+                      )}
+                      {selectedRow.rating === 'Orange' && (
+                        <span className="inline-block w-4 h-4 rounded-full bg-orange-400 align-middle" title="Orange"></span>
+                      )}
+                      {selectedRow.rating === 'Red' && (
+                        <span className="inline-block w-4 h-4 rounded-full bg-red-500 align-middle" title="Red"></span>
+                      )}
+                    </td>
+                    <td className="border p-2">
+                      <button className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 text-sm rounded">My Actions</button>
+                    </td>
+                  </tr>
+                )}
 
                 <tr>
                   <td colSpan={11} className="bg-blue-50 border-t-2">
-                    <div className="p-3 bg-white border rounded">
+                    <div className="p-3 bg-blue-100 border rounded">
                       <div className="bg-blue-600 text-white px-4 py-2 font-bold flex justify-between items-center">
-                        <span>Key Activities (Under this KPI / GOAL)</span>
+                        <span>Actions and Task Performed (Against the above Goal)</span>
                         <button className="bg-yellow-400 hover:bg-yellow-500 text-black px-4 py-1 rounded font-bold text-sm">
                           Save
                         </button>
                       </div>
-
-                      <div className="grid grid-cols-1 md:grid-cols-12 gap-2 mt-3">
-                        <div className="md:col-span-9 space-y-2 flex items-start">
-                          <div className="mr-4">
-                            <select
-                              className="border text-white bg-blue-500 rounded p-2 text-xs w-32"
-                              value={activityProject}
-                              onChange={e => setActivityProject(e.target.value)}
-                            >
-                              <option>Project</option>
-                              <option>Project 1</option>
-                              <option>Project 2</option>
-                              <option>Project 3</option>
-                            </select>
-                          </div>
-                          <div className="flex-1 space-y-2">
-                            {[...Array(3)].map((_, i) => (
-                              <div key={i} className="bg-yellow-100 border rounded p-2 text-sm flex items-center justify-between">
-                                <textarea
-                                  className="flex-1 border rounded p-1 text-xs mr-2 resize-none overflow-hidden min-h-[32px] max-h-40"
-                                  placeholder="Action / Activity Information"
-                                  value={activityInfo[i] || ''}
-                                  rows={1}
-                                  onChange={e => {
-                                    const newInfo = [...activityInfo];
-                                    newInfo[i] = e.target.value;
-                                    setActivityInfo(newInfo);
-                                    // Auto-resize
-                                    const target = e.target as HTMLTextAreaElement;
-                                    target.style.height = 'auto';
-                                    target.style.height = target.scrollHeight + 'px';
-                                  }}
-                                  onInput={e => {
-                                    const target = e.target as HTMLTextAreaElement;
-                                    target.style.height = 'auto';
-                                    target.style.height = target.scrollHeight + 'px';
-                                  }}
-                                />
-                                <div className="ml-4 flex items-center">
-                                  <span className="mr-2">Efforts in (hr)</span>
-                                  <input
-                                    type="text"
-                                    className="border rounded p-1 text-xs w-20"
-                                    placeholder="hr"
-                                    value={activityEfforts[i]}
-                                    onChange={e => {
-                                      const newEfforts = [...activityEfforts];
-                                      newEfforts[i] = e.target.value;
-                                      setActivityEfforts(newEfforts);
-                                    }}
-                                  />
-                                </div>
-                              </div>
-                            ))}
-                          </div>
+                      {/* Added 5 textarea input fields below the heading */}
+                      <div className="flex flex-row gap-3 mt-4">
+                        <textarea
+                          className="flex-1 border bg-white rounded p-2 text-sm min-w-[180px] max-w-xs"
+                          placeholder="Goals Activities for this week"
+                          value={goalsActivities}
+                          onChange={e => setGoalsActivities(e.target.value)}
+                          rows={2}
+                        />
+                        <textarea
+                          className="flex-1 border bg-white rounded p-2 text-sm min-w-[140px] max-w-xs"
+                          placeholder="Roadblocks"
+                          value={roadblocks}
+                          onChange={e => setRoadblocks(e.target.value)}
+                          rows={2}
+                        />
+                        <textarea
+                          className="flex-1 border bg-white rounded p-2 text-sm min-w-[140px] max-w-xs"
+                          placeholder="Pending work"
+                          value={pendingWork}
+                          onChange={e => setPendingWork(e.target.value)}
+                          rows={2}
+                        />
+                        <textarea
+                          className="flex-1 border bg-white rounded p-2 text-sm min-w-[140px] max-w-xs"
+                          placeholder="Next actions"
+                          value={nextActions}
+                          onChange={e => setNextActions(e.target.value)}
+                          rows={2}
+                        />
+                        <textarea
+                          className="flex-1 border bg-white rounded p-2 text-sm min-w-[140px] max-w-xs"
+                          placeholder="Team members"
+                          value={teamMembers}
+                          onChange={e => setTeamMembers(e.target.value)}
+                          rows={2}
+                        />
+                      </div>
+                      {/* Status and ratings row */}
+                      <div className="mt-8">
+                        <div className="flex flex-row gap-10 bg-gray-300 mb-4 p-2 border border-blue-400">
+                          <label className="text-lg font-bold min-w-[160px]">Overall status:</label>
+                          <label className="text-lg font-bold min-w-[100px]">Efforts:</label>
+                          <label className="text-lg font-bold min-w-[180px]">Project tracker Info</label>
+                          <label className="text-lg font-bold min-w-[120px]">My Own Rating</label>
+                          <label className="text-lg font-bold min-w-[120px]">Auditor's Rating</label>
+                          <label className="text-lg font-bold min-w-[180px]">Auditor's Comments</label>
                         </div>
-
-                        <div className="md:col-span-3 space-y-2 text-sm">
-                          <button className="bg-red-600 w-full text-white p-2 rounded hover:bg-red-800 text-center flex items-center justify-between">
-                            <span>References - SOP / Policies / ..</span>
-                            <FiLink className="ml-2" />
-                          </button>
-                          <button className="bg-yellow-100 border rounded text-center w-full hover:bg-yellow-200 p-2">
-                            Enter Project Tracker Details
-                          </button>
-                          <button className="border rounded text-center w-full p-2 disabled:bg-gray-400 disabled:text-white disabled:cursor-not-allowed hover:bg-gray-500 active:bg-gray-600" disabled>
-                            Next Review (Due on) 23/June
-                          </button>
-                          <div className="flex bg-white-100 border rounded text-center w-full hover:bg-blue-200 p-2" >My Own Rating
-                            <div className="flex-1 mt-1">
-                              <label className="relative inline-flex items-center cursor-pointer">
-                                <input
-                                  type="checkbox"
-                                  className="sr-only peer"
-                                  checked={myOwnRating}
-                                  onChange={() => setMyOwnRating((prev) => !prev)}
-                                />
-                                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-yellow-400 rounded-full peer peer-checked:bg-yellow-400 transition-all duration-300"></div>
-                                <div className="absolute left-1 top-1 bg-white w-4 h-4 rounded-full shadow-md transition-transform duration-300 peer-checked:translate-x-5"></div>
-                                {/* <span className="ml-3 text-sm font-medium text-gray-900">{myOwnRating ? 'ON' : 'OFF'}</span> */}
-                              </label>
-                            </div>
-                            <div className="flex-1 mt-1">
-                              <label className="relative inline-flex items-center cursor-pointer">
-                                <input
-                                  type="checkbox"
-                                  className="sr-only peer"
-                                  checked={myOwnRed}
-                                  onChange={() => setMyOwnRed((prev) => !prev)}
-                                />
-                                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-red-400 rounded-full peer peer-checked:bg-red-500 transition-all duration-300"></div>
-                                <div className="absolute left-1 top-1 bg-white w-4 h-4 rounded-full shadow-md transition-transform duration-300 peer-checked:translate-x-5"></div>
-                                {/* <span className="ml-3 text-sm font-medium text-red-600">{myOwnRed ? 'RED ON' : 'RED OFF'}</span> */}
-                              </label>
-                            </div>
-                            <div className="flex-1 mt-1">
-                              <label className="relative inline-flex items-center cursor-pointer">
-                                <input
-                                  type="checkbox"
-                                  className="sr-only peer"
-                                  checked={myOwnOrange}
-                                  onChange={() => setMyOwnOrange((prev) => !prev)}
-                                />
-                                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-orange-400 rounded-full peer peer-checked:bg-orange-400 transition-all duration-300"></div>
-                                <div className="absolute left-1 top-1 bg-white w-4 h-4 rounded-full shadow-md transition-transform duration-300 peer-checked:translate-x-5"></div>
-                                {/* <span className="ml-3 text-sm font-medium text-orange-600">{myOwnOrange ? 'ORANGE ON' : 'ORANGE OFF'}</span> */}
-                              </label>
-                            </div>
-                          </div>
+                        <div className="flex flex-row p-2 gap-12">
+                          <select
+                            className="border bg-white rounded p-2 text-sm min-w-[160px]"
+                            value={overallStatus}
+                            onChange={e => setOverallStatus(e.target.value)}
+                          >
+                            <option value="In Progress">In Progress</option>
+                            <option value="Un-Touched">Un-Touched</option>
+                            <option value="Completed">Completed</option>
+                          </select>
+                          <input
+                            type="Number"
+                            className="border bg-white rounded p-2 text-sm w-2 min-w-[100px]"
+                            placeholder="100"
+                            value={efforts}
+                            onChange={e => setEfforts(e.target.value)}
+                          />
+                          <input
+                            type="text"
+                            className="border bg-white rounded p-2 text-sm min-w-[180px]"
+                            placeholder="Enter Tracker File Name & Link"
+                            value={projectTrackerInfo}
+                            onChange={e => setProjectTrackerInfo(e.target.value)}
+                          />
+                          <select
+                            className="border bg-white rounded p-2 text-sm min-w-[120px]"
+                            value={myOwnRatingField}
+                            onChange={e => setMyOwnRatingField(e.target.value)}
+                          >
+                            <option value="Green">Green</option>
+                            <option value="Orange">Orange</option>
+                            <option value="Red">Red</option>
+                          </select>
+                          <select
+                            className="border bg-white rounded p-2 text-sm min-w-[120px]"
+                            value={auditorRating}
+                            onChange={e => setAuditorRating(e.target.value)}
+                          >
+                            <option value="">Select</option>
+                            <option value="Green">Green</option>
+                            <option value="Orange">Orange</option>
+                            <option value="Red">Red</option>
+                          </select>
+                          <input
+                            type="text"
+                            className="border bg-white rounded p-2 text-sm min-w-[180px]"
+                            placeholder="Enter Tracker File Name & Link"
+                            value={auditorComments}
+                            onChange={e => setAuditorComments(e.target.value)}
+                          />
                         </div>
                       </div>
 
@@ -282,7 +286,10 @@ const WeeklyGoalsAction: React.FC = () => {
               </thead>
               <tbody>
                 {mockRows.map((row, idx) => (
-                  <tr key={idx} className="hover:bg-blue-50">
+                  <tr
+                    key={idx}
+                    className={`hover:bg-blue-50 ${selectedRow === row ? 'bg-yellow-200' : ''}`}
+                  >
                     <td className="border p-2">{row.title}</td>
                     <td className="border p-2">{row.description}</td>
                     <td className="border p-2">{row.target}</td>
@@ -292,9 +299,19 @@ const WeeklyGoalsAction: React.FC = () => {
                     <td className="border p-2">{row.red}</td>
                     <td className="border p-2">{row.orange}</td>
                     <td className="border p-2">{row.effort}</td>
-                    <td className="border p-2">{row.rating}</td>
                     <td className="border p-2">
-                      <button className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 text-sm rounded">My Actions</button>
+                      {row.rating === 'Green' && (
+                        <span className="inline-block w-4 h-4 rounded-full bg-green-500 align-middle" title="Green"></span>
+                      )}
+                      {row.rating === 'Orange' && (
+                        <span className="inline-block w-4 h-4 rounded-full bg-orange-400 align-middle" title="Orange"></span>
+                      )}
+                      {row.rating === 'Red' && (
+                        <span className="inline-block w-4 h-4 rounded-full bg-red-500 align-middle" title="Red"></span>
+                      )}
+                    </td>
+                    <td className="border p-2">
+                      <button className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 text-sm rounded" onClick={() => setSelectedRow(row)}>My Actions</button>
                     </td>
                   </tr>
                 ))}

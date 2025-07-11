@@ -5,7 +5,8 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useNavigate } from 'react-router-dom';
 
-// const LOGIN_API_URL = import.meta.env.VITE_LOGIN_API_URL || 'http://localhost:81/pms/login';
+
+// const LOGIN_API_URL = import.meta.env.VITE_LOGIN || 'http://localhost:81/pms/login'_API_URL;
 
 const EmployeeLogin: React.FC = () => {
   const [username, setUsername] = useState('');
