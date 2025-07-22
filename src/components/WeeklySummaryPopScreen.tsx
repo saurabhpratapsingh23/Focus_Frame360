@@ -12,11 +12,17 @@ const editableFields = [
   'ws_challenges',
   'ws_unfinished_tasks',
   'ws_next_actions',
-  'ws_WFH',
-  'ws_WFO',
-  'ws_efforts',
-  'ws_leaves',
-  'ws_extra_days',
+];
+
+const topFields = [
+  { key: 'ws_week_id', label: 'Week ID' },
+  { key: 'ws_start_date', label: 'Start Date' },
+  { key: 'ws_end_date', label: 'End Date' },
+  { key: 'ws_WFH', label: 'WFH' },
+  { key: 'ws_WFO', label: 'WFO' },
+  { key: 'ws_efforts', label: 'Efforts' },
+  { key: 'ws_leaves', label: 'Leaves' },
+  { key: 'ws_extra_days', label: 'Extra Days' },
 ];
 
 const WeeklySummaryPopScreen: React.FC<WeeklySummaryPopScreenProps> = ({ isOpen, data, onClose, onSave }) => {
@@ -38,7 +44,7 @@ const WeeklySummaryPopScreen: React.FC<WeeklySummaryPopScreenProps> = ({ isOpen,
     if (onSave) {
       // Only send required fields
       const payload = {
-        ws_emp_id: form.ws_emp_id,
+        ws_emp_id: form.ws_emp_id, // still send, just not shown
         ws_week_id: form.ws_week_id,
         ws_success: form.ws_success,
         ws_challenges: form.ws_challenges,
@@ -58,37 +64,37 @@ const WeeklySummaryPopScreen: React.FC<WeeklySummaryPopScreenProps> = ({ isOpen,
     <div className="absolute left-0 top-0 w-full h-full z-30 bg-white/80 backdrop-blur-sm flex items-center justify-center" style={{ minHeight: '100%', minWidth: '100%' }}>
       <div className="relative w-full max-w-2xl mx-auto my-8 bg-white rounded-lg shadow-lg p-6 overflow-y-auto max-h-[80vh] border border-gray-200">
         <h2 className="text-lg font-bold mb-4">Weekly Summary Details</h2>
-        <form onSubmit={handleSave} className="space-y-2">
-          {/* Show ws_emp_id and ws_week_id as read-only */}
-          <div className="flex flex-col">
-            <label className="font-semibold mb-1 capitalize">ws_emp_id</label>
-            <div className="bg-gray-100 px-2 py-1 rounded text-gray-700">{form.ws_emp_id}</div>
-          </div>
-          <div className="flex flex-col">
-            <label className="font-semibold mb-1 capitalize">ws_week_id</label>
-            <div className="bg-gray-100 px-2 py-1 rounded text-gray-700">{form.ws_week_id}</div>
-          </div>
-          {/* Editable fields */}
-          {editableFields.map((key) => (
-            <div key={key} className="flex flex-col">
-              <label className="font-semibold mb-1 capitalize">{key.replace(/_/g, ' ')}</label>
-              {typeof form[key] === 'number' ? (
+        {/* Top fields in a single line */}
+        <div className="flex flex-wrap gap-4 mb-4">
+          {topFields.map(({ key, label }) => (
+            <div key={key} className="flex flex-col min-w-[110px]">
+              <label className="font-semibold mb-1 text-xs">{label}</label>
+              {['ws_week_id', 'ws_start_date', 'ws_end_date'].includes(key) ? (
+                <div className="bg-gray-100 px-2 py-1 rounded text-gray-700 text-xs">{form[key]}</div>
+              ) : (
                 <input
                   type="number"
                   name={key}
                   value={form[key] ?? ''}
                   onChange={handleChange}
-                  className="border rounded px-2 py-1"
-                />
-              ) : (
-                <textarea
-                  name={key}
-                  value={form[key] ?? ''}
-                  onChange={handleChange}
-                  className="border rounded px-2 py-1"
-                  rows={2}
+                  className="border rounded px-2 py-1 text-xs"
                 />
               )}
+            </div>
+          ))}
+        </div>
+        <form onSubmit={handleSave} className="space-y-2">
+          {/* Editable fields */}
+          {editableFields.map((key) => (
+            <div key={key} className="flex flex-col">
+              <label className="font-semibold mb-1 capitalize">{key.replace(/_/g, ' ')}</label>
+              <textarea
+                name={key}
+                value={form[key] ?? ''}
+                onChange={handleChange}
+                className="border rounded px-2 py-1"
+                rows={2}
+              />
             </div>
           ))}
           <div className="flex justify-end gap-2 mt-6 sticky bottom-0 bg-white pt-4 pb-2 z-10">
