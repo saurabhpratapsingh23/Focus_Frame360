@@ -317,7 +317,36 @@ const EmsPerformance: React.FC<EmsPerformanceProps> = ({ onShowKPIReport }) => {
       <div className= "bg-white p-4 rounded-2xl max-w-8xl mx-auto mt-4 shadow-md">
       <GoalTable/>
       </div>
-      <WeeklySummaryPopScreen isOpen={weeklyPopOpen} data={weeklyPopData} onClose={() => setWeeklyPopOpen(false)} />
+      <WeeklySummaryPopScreen
+        isOpen={weeklyPopOpen}
+        data={weeklyPopData}
+        onClose={() => setWeeklyPopOpen(false)}
+        onSave={async (payload) => {
+          try {
+            const res = await fetch(`${API_BASE_URL}/pms/api/e/postwsrow`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(payload),
+            });
+            if (!res.ok) {
+              let errorText = '';
+              try {
+                errorText = await res.text();
+                console.error('Backend error response:', errorText);
+              } catch (e) {
+                console.error('Failed to read backend error response');
+              }
+              throw new Error('Failed to save weekly summary row');
+            }
+            // Optionally handle the response here
+            // const data = await res.json();
+            alert('Weekly summary row saved successfully!');
+            setWeeklyPopOpen(false);
+          } catch (err: any) {
+            alert(err.message || 'Save failed');
+          }
+        }}
+      />
     </div>
   );
 };
