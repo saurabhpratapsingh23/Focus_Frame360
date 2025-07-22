@@ -28,9 +28,21 @@ const PopScreen: React.FC<PopScreenProps> = ({ isOpen, goal, onClose, onSubmit }
 
   if (!isOpen || !goal) return null;
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const statusOptions = ['In Progress', 'Completed', 'Pending'];
+  const ownRatingOptions = [
+    { label: 'green', value: 'G' },
+    { label: 'red', value: 'R' },
+    { label: 'orange', value: 'O' },
+  ];
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    setForm((prev: typeof form) => ({ ...prev, [name]: value }));
+    // For goal_own_rating, always store only the first letter (G, R, O)
+    if (name === 'goal_own_rating') {
+      setForm((prev: typeof form) => ({ ...prev, [name]: value }));
+    } else {
+      setForm((prev: typeof form) => ({ ...prev, [name]: value }));
+    }
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -92,6 +104,30 @@ const PopScreen: React.FC<PopScreenProps> = ({ isOpen, goal, onClose, onSubmit }
                   onChange={handleChange}
                   className="border rounded px-2 py-1"
                 />
+              ) : key === 'goal_status' ? (
+                <select
+                  name={key}
+                  value={form[key] ?? ''}
+                  onChange={handleChange}
+                  className="border rounded px-2 py-1"
+                >
+                  <option value="">Select status</option>
+                  {statusOptions.map(option => (
+                    <option key={option} value={option}>{option}</option>
+                  ))}
+                </select>
+              ) : key === 'goal_own_rating' ? (
+                <select
+                  name={key}
+                  value={form[key] ?? ''}
+                  onChange={handleChange}
+                  className="border rounded px-2 py-1"
+                >
+                  <option value="">Select rating</option>
+                  {ownRatingOptions.map(option => (
+                    <option key={option.value} value={option.value}>{option.label}</option>
+                  ))}
+                </select>
               ) : (
                 <textarea
                   name={key}
