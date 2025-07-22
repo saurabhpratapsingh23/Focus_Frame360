@@ -47,13 +47,23 @@ const WeeklySummaryPopScreen: React.FC<WeeklySummaryPopScreenProps> = ({ isOpen,
             <div key={key} className="flex flex-col">
               <label className="font-semibold mb-1 capitalize">{key.replace(/_/g, ' ')}</label>
               {editableFields.includes(key) ? (
-                <input
-                  type={['ws_WFH','ws_WFO','ws_efforts','ws_leaves','ws_extra_days'].includes(key) ? 'number' : 'text'}
-                  name={key}
-                  value={form[key] ?? ''}
-                  onChange={handleChange}
-                  className="border rounded px-2 py-1"
-                />
+                ['ws_success','ws_challenges','ws_unfinished_tasks','ws_next_actions'].includes(key) ? (
+                  <textarea
+                    name={key}
+                    value={form[key] ?? ''}
+                    onChange={handleChange}
+                    className="border rounded px-2 py-1"
+                    rows={2}
+                  />
+                ) : (
+                  <input
+                    type="number"
+                    name={key}
+                    value={form[key] ?? ''}
+                    onChange={handleChange}
+                    className="border rounded px-2 py-1"
+                  />
+                )
               ) : (
                 <div className="bg-gray-100 px-2 py-1 rounded text-gray-700">{String(value)}</div>
               )}
