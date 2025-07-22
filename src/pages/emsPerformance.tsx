@@ -168,6 +168,39 @@ const EmsPerformance: React.FC<EmsPerformanceProps> = ({ onShowKPIReport }) => {
     return date.toLocaleDateString(undefined, options);
   };
 
+  const handleWeeklyUpdateClick = async (row: WeeklySummary) => {
+    const payload = {
+      goal_rec_id: 0,
+      emp_id: row.ws_emp_id,
+      emp_code: row.ws_emp_code,
+      week_number: row.ws_week_number,
+      co_id: row.ws_co_id,
+      week_id: row.ws_week_id,
+    };
+    try {
+      const res = await fetch(`${API_BASE_URL}/pms/api/e/getwsrow`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) {
+        let errorText = '';
+        try {
+          errorText = await res.text();
+          console.error('Backend error response:', errorText);
+        } catch (e) {
+          console.error('Failed to read backend error response');
+        }
+        throw new Error('Failed to fetch weekly summary row');
+      }
+      // Optionally handle the response here
+      // const data = await res.json();
+      // alert('Weekly summary row fetched successfully!');
+    } catch (err: any) {
+      alert(err.message || 'Update failed');
+    }
+  };
+
   if (loading) return <div className="p-8 text-center">Loading...</div>;
   if (error || !employeeInfo) return <div className="p-8 text-center text-red-500">{error || 'No data found'}</div>;
 
@@ -241,7 +274,12 @@ const EmsPerformance: React.FC<EmsPerformanceProps> = ({ onShowKPIReport }) => {
                   {/* <td className=" px-2 py-2">{row.ws_week_id}</td> */}
                   <td className=" px-2 py-2">{row.ws_available_hours}</td>
                   <td className="px-2 py-2">
-                    <button className="bg-blue-900 hover:bg-blue-700 text-white px-3 py-1 text-sm rounded-md">Update</button>
+                    <button
+                      className="bg-blue-900 hover:bg-blue-700 text-white px-3 py-1 text-sm rounded-md"
+                      onClick={() => handleWeeklyUpdateClick(row)}
+                    >
+                      Update
+                    </button>
                   </td>
 
                 </tr>
