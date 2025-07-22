@@ -3,7 +3,7 @@ import { useLocation } from 'react-router-dom';
 // import { mockAPIData } from '../lib/mockAPIData';
 import KpiTable from '../components/KpiTable';
 import GoalTable from '../components/GoalTable';
-
+import WeeklySummaryPopScreen from '../components/WeeklySummaryPopScreen';
 
 
 export interface EmployeeInfo {
@@ -75,6 +75,8 @@ const EmsPerformance: React.FC<EmsPerformanceProps> = ({ onShowKPIReport }) => {
   const [weeklyStats, setWeeklyStats] = useState<WeeklyStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [popOpen, setPopOpen] = useState(false);
+  const [selectedRow, setSelectedRow] = useState<any>(null);
 
   useEffect(() => {
     // Get emp_code from localStorage's currentUser
@@ -168,6 +170,42 @@ const EmsPerformance: React.FC<EmsPerformanceProps> = ({ onShowKPIReport }) => {
     return date.toLocaleDateString(undefined, options);
   };
 
+  const handleUpdateClick = (row: any) => {
+    setSelectedRow(row);
+    setPopOpen(true);
+  };
+
+  const handlePopClose = () => {
+    setPopOpen(false);
+    setSelectedRow(null);
+  };
+
+  const handlePopSubmit = async (updatedRow: any) => {
+    try {
+      const payload = { ...updatedRow };
+      const res = await fetch('http://localhost:8081/pms/api/e/postwsrow', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) {
+        let errorText = '';
+        try {
+          errorText = await res.text();
+          console.error('Backend error response:', errorText);
+        } catch (e) {
+          console.error('Failed to read backend error response');
+        }
+        throw new Error('Failed to update weekly summary');
+      }
+      setWeeklySummary(ws => ws.map(w => w.ws_week_id === payload.ws_week_id ? { ...w, ...payload } : w));
+      setPopOpen(false);
+      setSelectedRow(null);
+    } catch (err: any) {
+      alert(err.message || 'Update failed');
+    }
+  };
+
   if (loading) return <div className="p-8 text-center">Loading...</div>;
   if (error || !employeeInfo) return <div className="p-8 text-center text-red-500">{error || 'No data found'}</div>;
 
@@ -241,7 +279,7 @@ const EmsPerformance: React.FC<EmsPerformanceProps> = ({ onShowKPIReport }) => {
                   {/* <td className=" px-2 py-2">{row.ws_week_id}</td> */}
                   <td className=" px-2 py-2">{row.ws_available_hours}</td>
                   <td className="px-2 py-2">
-                    <button className="bg-blue-900 hover:bg-blue-700 text-white px-3 py-1 text-sm rounded-md">Update</button>
+                    <button className="bg-blue-900 hover:bg-blue-700 text-white px-3 py-1 text-sm rounded-md" onClick={() => handleUpdateClick(row)}>Update</button>
                   </td>
 
                 </tr>
@@ -274,6 +312,7 @@ const EmsPerformance: React.FC<EmsPerformanceProps> = ({ onShowKPIReport }) => {
          
         </div>
       </div>
+      <WeeklySummaryPopScreen isOpen={popOpen} row={selectedRow} onClose={handlePopClose} onSubmit={handlePopSubmit} />
       <div className= "bg-white p-4 rounded-2xl max-w-8xl mx-auto mt-4 shadow-md">
       <GoalTable/>
       </div>
