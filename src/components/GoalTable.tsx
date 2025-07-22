@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import PopScreen from './PopScreen';
+import { toast } from 'react-toastify';
 
 interface Goal {
   goal_rec_id: number;
@@ -97,9 +98,39 @@ const GoalTable: React.FC = () => {
   if (loading) return <div className="p-4 text-center">Loading goals...</div>;
   if (error) return <div className="p-4 text-center text-red-500">{error}</div>;
 
-  const handleUpdateClick = (goal: Goal) => {
-    setSelectedGoal(goal);
-    setPopOpen(true);
+  const handleUpdateClick = async (goal: Goal) => {
+    // Prepare payload for /pms/api/e/getwgrow
+    const payload = {
+      goal_rec_id: goal.goal_rec_id,
+      emp_id: goal.goal_emp_id,
+      emp_code: goal.goal_emp_code,
+      week_number: goal.goal_week_number,
+      co_id: goal.goals_week_co_id,
+      week_id: goal.goal_week_number, // If you have a separate week_id field, use that instead
+    };
+    try {
+      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+      const res = await fetch(`${API_BASE_URL}/pms/api/e/getwgrow`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) {
+        let errorText = '';
+        try {
+          errorText = await res.text();
+          console.error('Backend error response:', errorText);
+        } catch (e) {
+          console.error('Failed to read backend error response');
+        }
+        throw new Error('Failed to fetch goal row');
+      }
+      const data = await res.json();
+      setSelectedGoal(data);
+      setPopOpen(true);
+    } catch (err: any) {
+      toast.error(err.message || 'Update failed');
+    }
   };
 
   const handlePopClose = () => {
