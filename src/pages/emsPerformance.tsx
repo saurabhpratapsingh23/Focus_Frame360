@@ -4,6 +4,8 @@ import { useLocation } from 'react-router-dom';
 import KpiTable from '../components/KpiTable';
 import GoalTable from '../components/GoalTable';
 import WeeklySummaryPopScreen from '../components/WeeklySummaryPopScreen';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 
 export interface EmployeeInfo {
@@ -199,7 +201,7 @@ const EmsPerformance: React.FC<EmsPerformanceProps> = ({ onShowKPIReport }) => {
       setWeeklyPopData(data);
       setWeeklyPopOpen(true);
     } catch (err: any) {
-      alert(err.message || 'Update failed');
+      toast.error(err.message || 'Update failed');
     }
   };
 
@@ -338,15 +340,16 @@ const EmsPerformance: React.FC<EmsPerformanceProps> = ({ onShowKPIReport }) => {
               }
               throw new Error('Failed to save weekly summary row');
             }
-            // Optionally handle the response here
-            // const data = await res.json();
-            alert('Weekly summary row saved successfully!');
+            toast.success('Weekly summary row saved successfully!');
             setWeeklyPopOpen(false);
+            // Refresh the table by re-fetching data
+            fetchWeeklySummary();
           } catch (err: any) {
-            alert(err.message || 'Save failed');
+            toast.error(err.message || 'Save failed');
           }
         }}
       />
+      <ToastContainer />
     </div>
   );
 };
