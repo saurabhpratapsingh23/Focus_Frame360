@@ -1,13 +1,13 @@
 import type { EmployeeInfo as EmployeeInfoType } from "./emsPerformance";
 
 // Mock data for demonstration
-const mockEmployeeInfo: EmployeeInfoType = {
-  emp_code: 'KYC10018',
-  Fullname: 'Kirti Gupta',
-  designation: 'Software Development Engineer',
-  department: 'Development Functions',
-  work_location: 'NCR',
-};
+// const mockEmployeeInfo: EmployeeInfoType = {
+//   emp_code: 'KYC10018',
+//   Fullname: 'Kirti Gupta',
+//   designation: 'Software Development Engineer',
+//   department: 'Development Functions',
+//   work_location: 'NCR',
+// };
 
 {/* <div className="bg-white p-8 rounded-2xl max-w-8xl mx-auto shadow-md mb-8">
 </div> */}
@@ -16,7 +16,7 @@ const EmployeeInfoCard: React.FC<{ info: EmployeeInfoType }> = ({ info }) => (
     <>
     
     <h2 className="text-2xl font-bold text-gray-900 mb-6 border-l-4 border-blue-600 pl-4">Employee Profile</h2>
-    <table className="w-full text-sm border-collapse mb-8">
+    {/* <table className="w-full text-sm border-collapse mb-8">
       <tbody>
         <tr><th className="w-2/5 bg-blue-50 font-semibold text-left p-3 border">Employee Code</th><td className="p-3 border">{info.emp_code}</td></tr>
         <tr><th className="bg-blue-50 font-semibold text-left p-3 border">Name</th><td className="p-3 border">{info.Fullname}</td></tr>
@@ -24,7 +24,7 @@ const EmployeeInfoCard: React.FC<{ info: EmployeeInfoType }> = ({ info }) => (
         <tr><th className="bg-blue-50 font-semibold text-left p-3 border">Department</th><td className="p-3 border">{info.department}</td></tr>
         <tr><th className="bg-blue-50 font-semibold text-left p-3 border">Work Location</th><td className="p-3 border">{info.work_location}</td></tr>
       </tbody>
-    </table>
+    </table> */}
     </>
 );
 
@@ -76,7 +76,7 @@ const KpiTable: React.FC = () => (
     return (
       <div className="bg-gray-100 p-8 text-gray-800 min-h-screen">
         <div className="bg-white p-8 rounded-2xl max-w-8xl mx-auto shadow-md">
-          <EmployeeInfoCard info={mockEmployeeInfo} />
+          {/* <EmployeeInfoCard info={mockEmployeeInfo} /> */}
           <KpiTable />
         </div>
       </div>

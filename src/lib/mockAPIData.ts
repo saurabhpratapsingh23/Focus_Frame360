@@ -1,12 +1,12 @@
 export const mockAPIData = {
-  employee_info: {
-    emp_code: 'KYC10018',
-    Fullname: 'Demo Gupta',
-    designation: 'Software Development Engineer',
-    department: 'Development Functions',
-    work_location: 'NCR',
-    period: ['Week #23(1/Jun/2025 - 7/Jun/2025', 'Week #27(17/Jun/2025 - 24/Jun/2025']
-  },
+  // employee_info: {
+  //   emp_code: 'KYC10018',
+  //   Fullname: 'Demo Gupta',
+  //   designation: 'Software Development Engineer',
+  //   department: 'Development Functions',
+  //   work_location: 'NCR',
+  //   period: ['Week #23(1/Jun/2025 - 7/Jun/2025', 'Week #27(17/Jun/2025 - 24/Jun/2025']
+  // },
   roles_responsibility: [
     { Division: 'Development Functions', function_code: 'DEV-ARC-DEF', FunctionTitle: 'Define the architecture for the SaaS platform', Perform: true, Manage: false, Audit: false, Define: false },
     { Division: 'Development Functions', function_code: 'DEV-ARC-SUP', FunctionTitle: 'Troubleshoot support issues related to architecture flaws', Perform: true, Manage: false, Audit: false, Define: false },
@@ -171,25 +171,25 @@ export const mockAPIData = {
   ],
 };
 
-export const mockUsers = [
-  { username: 'Stark', password: 'password123', name: 'Robert Stark', emp_code: 'KYC10018' },
-  { username: 'john', password: 'doe123', name: 'John Doe', emp_code: 'EMP00001' },
-];
+// export const mockUsers = [
+//   { username: 'Stark', password: 'password123', name: 'Robert Stark', emp_code: 'KYC10018' },
+//   { username: 'john', password: 'doe123', name: 'John Doe', emp_code: 'KYC10019' },
+// ];
 
-export function mockLogin(username: string, password: string) {
-  return new Promise<{ success: boolean; user?: any; message?: string }>((resolve) => {
-    setTimeout(() => {
-      const user = mockUsers.find(
-        (u) => u.username === username && u.password === password
-      );
-      if (user) {
-        resolve({ success: true, user });
-      } else {
-        resolve({ success: false, message: 'Invalid username or password' });
-      }
-    }, 500); // simulate network delay
-  });
-}
+// export function mockLogin(username: string, password: string) {
+//   return new Promise<{ success: boolean; user?: any; message?: string }>((resolve) => {
+//     setTimeout(() => {
+//       const user = mockUsers.find(
+//         (u) => u.username === username && u.password === password
+//       );
+//       if (user) {
+//         resolve({ success: true, user });
+//       } else {
+//         resolve({ success: false, message: 'Invalid username or password' });
+//       }
+//     }, 500); // simulate network delay
+//   });
+// }
 
 export const weekly_goals = [
   {

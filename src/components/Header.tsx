@@ -1,10 +1,22 @@
 import React, { useState, useEffect } from 'react';
-import { mockUsers } from '../lib/mockAPIData';
+// import { mockUsers } from '../lib/mockAPIData';
 
 interface User {
-  username: string;
-  name: string;
-  emp_code: string;
+  e_emp_code: string;
+  e_fullname: string;
+  e_work_location: string;
+  e_address: string;
+  e_email: string;
+  e_phone: string;
+  e_department: string;
+  e_designation: string;
+  e_DOJ: string;
+  e_DOB: string;
+  e_emp_id: number;
+  e_password: string;
+  e_last_login_date: string;
+  e_active: boolean;
+  e_create_date: string;
 }
 
 const Header: React.FC = () => {
@@ -16,8 +28,7 @@ const Header: React.FC = () => {
     // Get user information from localStorage
     const userData = localStorage.getItem('currentUser');
     const loginTime = localStorage.getItem('lastLoginTime');
-    const savedUsername = localStorage.getItem('savedUsername');
-    
+    // Removed mockUsers and savedUsername fallback logic
     if (userData) {
       try {
         const parsedUser = JSON.parse(userData);
@@ -28,14 +39,7 @@ const Header: React.FC = () => {
         localStorage.removeItem('currentUser');
         setUser(null);
       }
-    } else if (savedUsername) {
-      // Fallback to saved username if currentUser is not available
-      const foundUser = mockUsers.find(u => u.username === savedUsername);
-      if (foundUser) {
-        setUser(foundUser);
-      }
     }
-    
     if (loginTime) {
       try {
         const date = new Date(loginTime);
@@ -57,17 +61,25 @@ const Header: React.FC = () => {
   return (
     <div className="h-18 bg-gray-100 px-5 flex items-center justify-between border-b-2 border-[#1d2a56]">
       <div className="text-sm-2 text-gray-800">
-        Welcome, <span className="font-bold text-black">{user?.name || 'User'}</span> |
-        Login Date: {loginDate || '-'}
+        Welcome, <span className="font-bold text-black">{user?.e_fullname || 'No Name'}</span> |
         
+         <span className='font-bold text-black px-2'>Login Date:</span>  {loginDate || '-'}
         {/* | Last Login: <span className="font-bold">{lastLoginTime || 'N/A'}</span> */}
-      
-      
       </div>
-      <div className="text-xs text-gray-600">
-        {/* <p>Logged in as: <strong>{user ? user.name : 'Unknown User'}</strong></p> */}
-        {/* <p>Login Date: {loginDate || '-'}</p> */}
-        <p>Last Updated: 24 June 2025 at 6:30 PM</p>
+      <div className="flex items-center gap-4 text-xs text-gray-600">
+        <p>Last Updated: <span className='font-bold text-black'>{user?.e_last_login_date}</span></p>
+        <button
+          className="ml-2 px-3 py-1 bg-red-500 hover:bg-red-600 text-white rounded text-xs font-semibold transition"
+          onClick={() => {
+            localStorage.removeItem('currentUser');
+            localStorage.removeItem('lastLoginTime');
+            localStorage.removeItem('savedUsername');
+            localStorage.removeItem('savedPassword');
+            window.location.href = '/';
+          }}
+        >
+          Logout
+        </button>
       </div>
     </div>
   );
