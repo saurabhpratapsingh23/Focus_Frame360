@@ -170,9 +170,30 @@ const EmsPerformance: React.FC<EmsPerformanceProps> = ({ onShowKPIReport }) => {
     return date.toLocaleDateString(undefined, options);
   };
 
-  const handleUpdateClick = (row: any) => {
-    setSelectedRow(row);
-    setPopOpen(true);
+  const handleUpdateClick = async (row: any) => {
+    // Prepare body for getwsrow API
+    const body = {
+      goal_rec_id: 0,
+      emp_id: row.ws_emp_id,
+      emp_code: row.ws_emp_code,
+      week_number: row.ws_week_number,
+      co_id: row.ws_co_id,
+      week_id: row.ws_week_id,
+    };
+    try {
+      const res = await fetch(`${API_BASE_URL}/pms/api/e/getwsrow`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      if (!res.ok) throw new Error('Failed to fetch row data');
+      const data = await res.json();
+      // Use the returned row data for editing (assume data.row or similar)
+      setSelectedRow(data.row || data);
+      setPopOpen(true);
+    } catch (err) {
+      alert('Failed to fetch row data');
+    }
   };
 
   const handlePopClose = () => {
