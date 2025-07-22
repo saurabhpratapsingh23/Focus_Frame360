@@ -3,7 +3,7 @@ import { useLocation } from 'react-router-dom';
 // import { mockAPIData } from '../lib/mockAPIData';
 import KpiTable from '../components/KpiTable';
 import GoalTable from '../components/GoalTable';
-
+import WeeklySummaryPopScreen from '../components/WeeklySummaryPopScreen';
 
 
 export interface EmployeeInfo {
@@ -75,6 +75,8 @@ const EmsPerformance: React.FC<EmsPerformanceProps> = ({ onShowKPIReport }) => {
   const [weeklyStats, setWeeklyStats] = useState<WeeklyStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [weeklyPopOpen, setWeeklyPopOpen] = useState(false);
+  const [weeklyPopData, setWeeklyPopData] = useState<any>(null);
 
   useEffect(() => {
     // Get emp_code from localStorage's currentUser
@@ -193,9 +195,9 @@ const EmsPerformance: React.FC<EmsPerformanceProps> = ({ onShowKPIReport }) => {
         }
         throw new Error('Failed to fetch weekly summary row');
       }
-      // Optionally handle the response here
-      // const data = await res.json();
-      // alert('Weekly summary row fetched successfully!');
+      const data = await res.json();
+      setWeeklyPopData(data);
+      setWeeklyPopOpen(true);
     } catch (err: any) {
       alert(err.message || 'Update failed');
     }
@@ -315,6 +317,7 @@ const EmsPerformance: React.FC<EmsPerformanceProps> = ({ onShowKPIReport }) => {
       <div className= "bg-white p-4 rounded-2xl max-w-8xl mx-auto mt-4 shadow-md">
       <GoalTable/>
       </div>
+      <WeeklySummaryPopScreen isOpen={weeklyPopOpen} data={weeklyPopData} onClose={() => setWeeklyPopOpen(false)} />
     </div>
   );
 };
