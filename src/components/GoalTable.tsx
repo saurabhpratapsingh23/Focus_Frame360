@@ -164,7 +164,7 @@ const GoalTable: React.FC = () => {
         }
         throw new Error('Failed to update goal');
       }
-      setGoals(goals => goals.map(g => g.goal_id === payload.goal_id ? { ...payload } : g));
+      setGoals(goals => goals.map(g => g.goal_rec_id === payload.goal_rec_id ? { ...payload } : g));
       setPopOpen(false);
       setSelectedGoal(null);
     } catch (err: any) {
