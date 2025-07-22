@@ -44,6 +44,7 @@ const PopScreen: React.FC<PopScreenProps> = ({ isOpen, goal, onClose, onSubmit }
     { key: 'goal_week_start_date', label: 'Start Date' },
     { key: 'goal_week_end_date', label: 'End Date' },
     { key: 'goal_id', label: 'Goal ID' },
+    { key: 'goal_effort', label: 'Goal Effort' },
   ];
   const titleFields = [
     { key: 'goal_title', label: 'Title' },
@@ -61,6 +62,52 @@ const PopScreen: React.FC<PopScreenProps> = ({ isOpen, goal, onClose, onSubmit }
 
   // Render a field (read-only or editable)
   const renderField = (key: string, label: string) => {
+    // Hide these fields from UI
+    if ([
+      'goal_rec_id',
+      'goal_emp_id',
+      'goal_emp_code',
+      'goals_week_co_id',
+    ].includes(key)) return null;
+
+    // Dropdown for Own Rating
+    if (key === 'goal_own_rating') {
+      return (
+        <div className="flex flex-col min-w-[120px]">
+          <label className="font-semibold mb-1 capitalize">{label}</label>
+          <select
+            name={key}
+            value={form[key] ?? ''}
+            onChange={handleChange}
+            className="border rounded px-2 py-1"
+          >
+            <option value="">Select</option>
+            <option value="Green">Green</option>
+            <option value="Red">Red</option>
+            <option value="Orange">Orange</option>
+          </select>
+        </div>
+      );
+    }
+    // Dropdown for Status
+    if (key === 'goal_status') {
+      return (
+        <div className="flex flex-col min-w-[120px]">
+          <label className="font-semibold mb-1 capitalize">{label}</label>
+          <select
+            name={key}
+            value={form[key] ?? ''}
+            onChange={handleChange}
+            className="border rounded px-2 py-1"
+          >
+            <option value="">Select</option>
+            <option value="In progress">In progress</option>
+            <option value="Completed">Completed</option>
+            <option value="Pending">Pending</option>
+          </select>
+        </div>
+      );
+    }
     if (editableFields.includes(key)) {
       if (key === 'goal_effort') {
         return (
@@ -122,7 +169,13 @@ const PopScreen: React.FC<PopScreenProps> = ({ isOpen, goal, onClose, onSubmit }
               topFields.some(f => f.key === key) ||
               titleFields.some(f => f.key === key) ||
               ratingFields.some(f => f.key === key) ||
-              auditorFields.some(f => f.key === key)
+              auditorFields.some(f => f.key === key) ||
+              [
+                'goal_rec_id',
+                'goal_emp_id',
+                'goal_emp_code',
+                'goals_week_co_id',
+              ].includes(key)
             ) {
               return null;
             }
