@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import PopScreen from './PopScreen';
+import { toast } from 'react-toastify';
 
 interface Goal {
   goal_rec_id: number;
@@ -97,59 +98,19 @@ const GoalTable: React.FC = () => {
   if (loading) return <div className="p-4 text-center">Loading goals...</div>;
   if (error) return <div className="p-4 text-center text-red-500">{error}</div>;
 
-  const handleUpdateClick = (goal: Goal) => {
-    setSelectedGoal(goal);
-    setPopOpen(true);
-  };
-
-  const handlePopClose = () => {
-    setPopOpen(false);
-    setSelectedGoal(null);
-  };
-
-  const handlePopSubmit = async (updatedGoal: Goal) => {
-    const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+  const handleUpdateClick = async (goal: Goal) => {
+    // Prepare payload for /pms/api/e/getwgrow
+    const payload = {
+      goal_rec_id: goal.goal_rec_id,
+      emp_id: goal.goal_emp_id,
+      emp_code: goal.goal_emp_code,
+      week_number: goal.goal_week_number,
+      co_id: goal.goals_week_co_id,
+      week_id: goal.goal_week_number, // If you have a separate week_id field, use that instead
+    };
     try {
-      // Ensure all required fields are present and have correct types
-      const ensureString = (val: any) => (typeof val === 'string' ? val : (val == null ? '' : String(val)));
-      const ensureNumber = (val: any) => (typeof val === 'number' ? val : Number(val) || 0);
-      // Try to convert date to YYYY-MM-DD if possible
-      const toISODate = (val: any) => {
-        if (!val) return '';
-        if (/\d{4}-\d{2}-\d{2}/.test(val)) return val; // already ISO
-        // Try to parse formats like '15-Jun' or '21-Jun'
-        const d = Date.parse(val);
-        if (!isNaN(d)) return new Date(d).toISOString().slice(0, 10);
-        // fallback: return as is
-        return val;
-      };
-      // Fill with defaults if missing
-      const payload = {
-        goal_rec_id: ensureNumber(updatedGoal.goal_rec_id),
-        goal_emp_id: ensureNumber(updatedGoal.goal_emp_id),
-        goal_emp_code: ensureString(updatedGoal.goal_emp_code),
-        goal_week_number: ensureNumber(updatedGoal.goal_week_number),
-        goal_id: ensureString(updatedGoal.goal_id),
-        goal_action_performed: ensureString(updatedGoal.goal_action_performed),
-        goal_challenges: ensureString(updatedGoal.goal_challenges),
-        goal_unfinished_tasks: ensureString(updatedGoal.goal_unfinished_tasks),
-        goal_weekly_next_actions: ensureString(updatedGoal.goal_weekly_next_actions),
-        goal_status: ensureString(updatedGoal.goal_status),
-        goal_effort: ensureNumber(updatedGoal.goal_effort),
-        goal_own_rating: ensureString(updatedGoal.goal_own_rating),
-        goal_auditor_rating: ensureString(updatedGoal.goal_auditor_rating),
-        goal_auditor_comments: ensureString(updatedGoal.goal_auditor_comments),
-        goal_data_source_description: ensureString(updatedGoal.goal_data_source_description),
-        goal_team_members: ensureString(updatedGoal.goal_team_members),
-        goal_title: ensureString(updatedGoal.goal_title),
-        goal_description: ensureString(updatedGoal.goal_description),
-        goal_target: ensureString(updatedGoal.goal_target),
-        goal_week_start_date: toISODate(updatedGoal.goal_week_start_date),
-        goal_week_end_date: toISODate(updatedGoal.goal_week_end_date),
-        goals_week_co_id: ensureNumber((updatedGoal as any).goals_week_co_id),
-      };
-      console.log('Final payload being sent:', payload);
-      const res = await fetch(`${API_BASE_URL}/pms/api/e/postwgrow`, {
+      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+      const res = await fetch(`${API_BASE_URL}/pms/api/e/getwgrow`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
@@ -162,14 +123,111 @@ const GoalTable: React.FC = () => {
         } catch (e) {
           console.error('Failed to read backend error response');
         }
+        throw new Error('Failed to fetch goal row');
+      }
+      const data = await res.json();
+      setSelectedGoal(data);
+      setPopOpen(true);
+    } catch (err: any) {
+      toast.error(err.message || 'Update failed');
+    }
+  };
+
+  const handlePopClose = () => {
+    setPopOpen(false);
+    setSelectedGoal(null);
+  };
+
+  const handlePopSubmit = async (updatedGoal: Goal) => {
+    const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+    try {
+      // Prepare payload with all required fields
+      const payload = {
+        goal_rec_id: updatedGoal.goal_rec_id,
+        goal_emp_id: updatedGoal.goal_emp_id,
+        goal_emp_code: updatedGoal.goal_emp_code,
+        goal_week_number: updatedGoal.goal_week_number,
+        goal_id: updatedGoal.goal_id,
+        goal_action_performed: updatedGoal.goal_action_performed,
+        goal_challenges: updatedGoal.goal_challenges,
+        goal_unfinished_tasks: updatedGoal.goal_unfinished_tasks,
+        goal_weekly_next_actions: updatedGoal.goal_weekly_next_actions,
+        goal_status: updatedGoal.goal_status,
+        goal_effort: Number(updatedGoal.goal_effort),
+        goal_own_rating: updatedGoal.goal_own_rating,
+        goal_auditor_rating: updatedGoal.goal_auditor_rating,
+        goal_auditor_comments: updatedGoal.goal_auditor_comments,
+        goal_data_source_description: updatedGoal.goal_data_source_description,
+        goal_team_members: updatedGoal.goal_team_members,
+        goal_title: updatedGoal.goal_title,
+        goal_description: updatedGoal.goal_description,
+        goal_target: updatedGoal.goal_target,
+        goal_week_start_date: updatedGoal.goal_week_start_date,
+        goal_week_end_date: updatedGoal.goal_week_end_date,
+        gaols_week_co_id: updatedGoal.goals_week_co_id, // Note: typo as per your JSON
+      };
+      const res = await fetch(`${API_BASE_URL}/pms/api/e/postwgrow`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+        
+      });
+      if (!res.ok) {
+        let errorText = '';
+        try {
+          errorText = await res.text();
+          console.error('Backend error response:', errorText);
+          
+        } catch (e) {
+          console.error('Failed to read backend error response');
+        }
         throw new Error('Failed to update goal');
       }
-      setGoals(goals => goals.map(g => g.goal_id === payload.goal_id ? { ...payload } : g));
+      toast.success('Goal updated successfully!');
       setPopOpen(false);
       setSelectedGoal(null);
+      // Refresh the table by re-fetching data
+      refreshGoals();
     } catch (err: any) {
-      alert(err.message || 'Update failed');
+      toast.error(err.message || 'Update failed');
     }
+  };
+
+  // Add refreshGoals function to re-fetch goals and summary
+  const refreshGoals = () => {
+    const userData = localStorage.getItem('currentUser');
+    let empID = '';
+    if (userData) {
+      try {
+        const parsedUser = JSON.parse(userData);
+        empID = parsedUser.e_emp_code;
+      } catch (e) {
+        setError('Invalid user data');
+        setLoading(false);
+        return;
+      }
+    } else {
+      setError('User not logged in');
+      setLoading(false);
+      return;
+    }
+    const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+    setLoading(true);
+    setError(null);
+    fetch(`${API_BASE_URL}/pms/api/e/wg/${empID}?weeks=16,17,18`)
+      .then(res => {
+        if (!res.ok) throw new Error(`Goals API error: ${res.status}`);
+        return res.json();
+      })
+      .then(data => {
+        setGoals(data.goals || []);
+        setGoalsSummary(data.goalsSummary || []);
+        setLoading(false);
+      })
+      .catch(err => {
+        setError(err.message || 'Failed to load goals');
+        setLoading(false);
+      });
   };
 
   // Grouped row classes for zebra striping by goal_id
