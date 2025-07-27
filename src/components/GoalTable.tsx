@@ -234,11 +234,20 @@ const GoalTable: React.FC = () => {
   const goalRowClasses = getGroupedRowClasses(goals, g => g.goal_id.trim());
   const summaryRowClasses = getGroupedRowClasses(goalsSummary, s => s.goal_es_id.trim());
 
+  // Helper to map rating codes to color names
+  const mapRating = (val: string) => {
+    if (!val) return '';
+    if (val === 'R') return 'Red';
+    if (val === 'G') return 'Green';
+    if (val === 'O') return 'Orange';
+    return val;
+  };
+
   return (
     <div className="space-y-8">
       {/* Table 1: Goals */}
       <div>
-        <h2 className="text-xl font-bold mb-4 p-2">Goals (Weekly Details)</h2>
+        <h2 className="text-lg  px-2  py-2 text-white font-bold mb-4 bg-gray-700 rounded-t-xl">Goals (Weekly Details)</h2>
         <div className="overflow-x-auto">
           <table className="min-w-full text-sm ">
             <thead className="bg-gray-200">
@@ -277,12 +286,34 @@ const GoalTable: React.FC = () => {
                   <td className=" px-2 py-1 whitespace-pre-line">{g.goal_unfinished_tasks}</td>
                   <td className=" px-2 py-1 whitespace-pre-line">{g.goal_weekly_next_actions}</td>
                   <td className=" px-2 py-1 text-center">{g.goal_effort}</td>
-                  <td className=" px-2 py-1 text-center">{g.goal_own_rating}</td>
-                  <td className=" px-2 py-1 text-center">{g.goal_auditor_rating}</td>
+                  <td className=" px-2 py-1 text-center">
+                    {mapRating(g.goal_own_rating) === 'Green' && (
+                        <span className="inline-block w-4 h-4 rounded-full bg-green-500 align-middle" title="Green"></span>
+                      )}
+                    {mapRating(g.goal_own_rating) === 'Orange' && (
+                        <span className="inline-block w-4 h-4 rounded-full bg-orange-400 align-middle" title="Orange"></span>
+                      )}
+                    {mapRating(g.goal_own_rating) === 'Red' && (
+                        <span className="inline-block w-4 h-4 rounded-full bg-red-500 align-middle" title="Red"></span>
+                      )}
+                    {/* <span style={{ fontSize: '0.8em', color: '#888', marginLeft: 4 }}>{g.goal_own_rating}</span> */}
+                  </td>
+                  <td className=" px-2 py-1 text-center">
+                    {mapRating(g.goal_auditor_rating) === 'Green' && (
+                        <span className="inline-block w-4 h-4 rounded-full bg-green-500 align-middle" title="Green"></span>
+                      )}
+                    {mapRating(g.goal_auditor_rating) === 'Orange' && (
+                        <span className="inline-block w-4 h-4 rounded-full bg-orange-400 align-middle" title="Orange"></span>
+                      )}
+                    {mapRating(g.goal_auditor_rating) === 'Red' && (
+                        <span className="inline-block w-4 h-4 rounded-full bg-red-500 align-middle" title="Red"></span>
+                      )}
+                    {/* <span style={{ fontSize: '0.8em', color: '#888', marginLeft: 4 }}>{g.goal_auditor_rating}</span> */}
+                  </td>
                   <td className=" px-2 py-1 whitespace-pre-line">{g.goal_auditor_comments}</td>
                   <td className=" px-2 py-1 text-center">{g.goal_status}</td>
                   <td className="px-2 py-2">
-                    <button className="bg-blue-900 hover:bg-blue-700 text-white px-3 py-1 text-sm rounded-md" onClick={() => handleUpdateClick(g)}>Update</button>
+                    <button className="bg-blue-900 hover:bg-blue-700 text-white px-3 py-1 text-sm rounded-md" onClick={() => handleUpdateClick(g)}>Edit</button>
                   </td>
                 </tr>
               ))}
@@ -293,7 +324,7 @@ const GoalTable: React.FC = () => {
 
       {/* Table 2: Goal Summary */}
       <div>
-        <h2 className="text-xl font-bold mb-4 p-2">Goal Summary</h2>
+        <h2 className="text-lg  px-2  py-2 text-white font-bold mb-4 bg-gray-700 rounded-t-xl">Goal Summary</h2>
         <div className="overflow-x-auto">
           <table className="min-w-full text-sm ">
             <thead className="bg-gray-200">

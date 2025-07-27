@@ -151,7 +151,7 @@ const PopScreen: React.FC<PopScreenProps> = ({
               name={key}
               value={form[key] ?? ""}
               onChange={handleChange}
-              className="border rounded px-2 py-2 h-40"
+              className={`border rounded px-2 py-2 ${key === "goal_team_members" ? "h-10" : "h-40"}`}
               rows={2}
             />
           </div>
@@ -236,7 +236,7 @@ const PopScreen: React.FC<PopScreenProps> = ({
             );
           })}
           {/* Goal team members field (editable) */}
-          {renderField("goal_team_members", "Associated Team Members")}
+          {/* {renderField("goal_team_members", "Associated Team Members")} */}
           {/* Auditor fields at the bottom */}
           <div className="flex flex-wrap gap-4 mt-2">
             {auditorFields.map((f) => renderField(f.key, f.label))}

@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { useLocation } from 'react-router-dom';
+// import { useLocation } from 'react-router-dom';
 // import { mockAPIData } from '../lib/mockAPIData';
-import KpiTable from '../components/KpiTable';
+// import KpiTable from '../components/KpiTable';
 import GoalTable from '../components/GoalTable';
 import WeeklySummaryPopScreen from '../components/WeeklySummaryPopScreen';
+import RolesPopScreen from '../components/RolesPopScreen';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-
+import RolesAndResponsibility from '../components/RolesAndResponsibility';
 
 export interface EmployeeInfo {
   e_emp_code: string;
@@ -17,18 +18,7 @@ export interface EmployeeInfo {
   // Add period if available in API, else remove from UI
 }
 
-interface RoleResponsibility {
-  Division: string;
-  FunctionTitle: string;
-  Role: {
-    erole_function_code: string;
-    erole_perform: number;
-    erole_manage: number;
-    erole_audit: number;
-    erole_define: number;
-    // Add other fields as needed
-  };
-}
+
 
 interface WeeklySummary {
   week_start_date: string;
@@ -69,8 +59,8 @@ interface EmsPerformanceProps {
   onShowKPIReport?: () => void;
 }
 
-const EmsPerformance: React.FC<EmsPerformanceProps> = ({ onShowKPIReport }) => {
-  const location = useLocation();
+const EmsPerformance: React.FC<EmsPerformanceProps> = () => {
+  // const location = useLocation();
   const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
   const [employeeInfo, setEmployeeInfo] = useState<EmployeeInfo | null>(null);
   const [weeklySummary, setWeeklySummary] = useState<WeeklySummary[]>([]);
@@ -79,6 +69,7 @@ const EmsPerformance: React.FC<EmsPerformanceProps> = ({ onShowKPIReport }) => {
   const [error, setError] = useState<string | null>(null);
   const [weeklyPopOpen, setWeeklyPopOpen] = useState(false);
   const [weeklyPopData, setWeeklyPopData] = useState<any>(null);
+  const [rolesPopOpen, setRolesPopOpen] = useState(false);
 
   useEffect(() => {
     // Get emp_code from localStorage's currentUser
@@ -214,6 +205,13 @@ const EmsPerformance: React.FC<EmsPerformanceProps> = ({ onShowKPIReport }) => {
       <div className="bg-white p-4 rounded-2xl max-w-8xl mx-auto shadow-md mb-4">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-2xl font-bold ">Perfomance Report</h2>
+          <button
+            className="bg-blue-900 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-semibold shadow"
+            style={{ minWidth: '160px' }}
+            onClick={() => setRolesPopOpen(true)}
+          >
+            Edit Weekly Data
+          </button>
         </div>
         <div className="mb-8 space-y-2">
           <div className=""><span className="w-2/5 font-bold">Employee Code:</span> <span className="ml-2">{employeeInfo.e_emp_code}</span></div>
@@ -282,7 +280,7 @@ const EmsPerformance: React.FC<EmsPerformanceProps> = ({ onShowKPIReport }) => {
                       className="bg-blue-900 hover:bg-blue-700 text-white px-3 py-1 text-sm rounded-md"
                       onClick={() => handleWeeklyUpdateClick(row)}
                     >
-                      Update
+                      Edit
                     </button>
                   </td>
 
@@ -315,7 +313,12 @@ const EmsPerformance: React.FC<EmsPerformanceProps> = ({ onShowKPIReport }) => {
            <strong className="ml-2">WD</strong> = Working Days,  <strong className="ml-2">H</strong> = Holidays,  <strong className="ml-2">L</strong> = Leaves,  <strong className="ml-2">WFH</strong> = Working from Home,  <strong className="ml-2">WFO</strong> = Working from Office,  <strong className="ml-2">ED</strong> = Extra day(s);
          
         </div>
+
       </div>
+<div className="bg-white p-4 rounded-2xl max-w-8xl mx-auto mt-4 shadow-md">
+<RolesAndResponsibility/>
+</div>
+
       <div className= "bg-white p-4 rounded-2xl max-w-8xl mx-auto mt-4 shadow-md">
       <GoalTable/>
       </div>
@@ -329,14 +332,12 @@ const EmsPerformance: React.FC<EmsPerformanceProps> = ({ onShowKPIReport }) => {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify(payload),
-            
             });
             if (!res.ok) {
               let errorText = '';
               try {
                 errorText = await res.text();
                 console.error('Backend error response:', errorText);
-                
               } catch (e) {
                 console.error('Failed to read backend error response');
               }
@@ -345,12 +346,14 @@ const EmsPerformance: React.FC<EmsPerformanceProps> = ({ onShowKPIReport }) => {
             toast.success('Weekly summary row saved successfully!');
             setWeeklyPopOpen(false);
             // Refresh the table by re-fetching data
-            fetchWeeklySummary();
+            // fetchWeeklySummary();
           } catch (err: any) {
             toast.error(err.message || 'Save failed');
           }
         }}
       />
+      {/* RolesPopScreen popup */}
+      <RolesPopScreen isOpen={rolesPopOpen} onClose={() => setRolesPopOpen(false)} />
       <ToastContainer />
     </div>
   );
