@@ -65,23 +65,23 @@ const WeeklySummaryPopScreen: React.FC<WeeklySummaryPopScreenProps> = ({ isOpen,
   };
 
   return (
-    <div className="absolute left-0 top-0 w-full h-full z-30 bg-white/80 backdrop-blur-md  flex items-center justify-center" style={{ minHeight: '100%', minWidth: '100%' }}>
-      <div className="relative w-full max-w-6xl mx-auto my-8 bg-white rounded-lg shadow-lg p-6 overflow-y-auto max-h-[80vh] border border-gray-200 flex flex-col">
-        <h2 className="text-lg  px-2  py-2 text-white font-bold mb-4 bg-gray-700 rounded-t-xl">Weekly Summary Details</h2>
+    <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center">
+      <div className="relative w-full max-w-6xl mx-auto my-8 bg-white rounded-lg shadow-lg p-6 overflow-y-auto max-h-[80vh] border border-gray-900 flex flex-col">
+        <h2 className="text-xl md:text-2xl font-bold text-center text-white bg-gray-900 px-4 py-3 rounded-t-md shadow">Weekly Summary Details</h2>
         {/* Top fields in a single line */}
-        <div className="flex flex-wrap gap-4 mb-4">
+        <div className="flex flex-wrap mt-2 gap-4 mb-4">
           {topFields.map(({ key, label }) => (
             <div key={key} className="flex flex-col min-w-[70px]">
-              <label className="font-semibold mb-1 text-xs">{label}</label>
+              <label className="font-bold mb-1 text-md">{label}</label>
               {['ws_week_id', 'ws_start_date', 'ws_end_date','ws_workk_days','ws_Holidays' ].includes(key) ? (
-                <div className="bg-gray-100 px-2 py-1 rounded text-gray-700 w-15 text-xs">{form[key]}</div>
+                <div className="bg-gray-100 px-2 py-2 rounded text-gray-700 w-15 text-sm">{form[key]}</div>
               ) : (
                 <input
                   type="number"
                   name={key}
                   value={form[key] ?? ''}
                   onChange={handleChange}
-                  className="border rounded px-2 py-1 text-xs w-20"
+                  className="border rounded px-2 py-1 mt-2 text-xs w-20"
                 />
               )}
             </div>
@@ -91,19 +91,19 @@ const WeeklySummaryPopScreen: React.FC<WeeklySummaryPopScreenProps> = ({ isOpen,
           {/* Editable fields */}
           {editableFields.map(({ key, label }) => (
             <div key={key} className="flex flex-col">
-              <label className="font-semibold mb-1 mt-4 capitalize">{label}</label>
+              <label className="font-bold mb-1 mt-4 capitalize">{label}</label>
               <textarea
                 name={key}
                 value={form[key] ?? ''}
                 onChange={handleChange}
-                className="border rounded px-2 py-2 h-30"
+                className="border border-gray-300 h-40 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
                 rows={2}
               />
             </div>
           ))}
-          <div className="flex justify-end sticky gap-2 mt-auto pt-4 pb-2 bg-white z-10">
-            <button type="button" className="px-4 py- rounded bg-gray-300 hover:bg-gray-400" onClick={onClose}>Close</button>
-            <button type="submit" className="px-4 py-2  rounded bg-blue-900 text-white hover:bg-blue-700">Save</button>
+          <div className="flex justify-end gap-2 mt-6 border-t pt-4">
+            <button type="button" className="px-4 py-2 rounded bg-gray-300 hover:bg-gray-400 text-sm font-medium" onClick={onClose}>Close</button>
+            <button type="submit" className="px-4 py-2 rounded bg-blue-800 hover:bg-blue-600 text-white text-sm font-medium">Save</button>
           </div>
         </form>
       </div>

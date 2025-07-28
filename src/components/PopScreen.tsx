@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 
 interface PopScreenProps {
   isOpen: boolean;
-  goal: any; // Use Goal type if available
+  goal: any;
   onClose: () => void;
   onSubmit: (updatedGoal: any) => void;
 }
@@ -10,10 +10,7 @@ interface PopScreenProps {
 const editableFields = [
   { key: "goal_action_performed", label: "Goal Achievements/Accomplishments" },
   { key: "goal_challenges", label: "Goal Challenges/Roadblocks" },
-  {
-    key: "goal_unfinished_tasks",
-    label: "Goal Tasks started but not completed",
-  },
+  { key: "goal_unfinished_tasks", label: "Goal Tasks started but not completed" },
   { key: "goal_weekly_next_actions", label: "Goal Upcoming planned Tasks" },
   { key: "goal_status", label: "Status" },
   { key: "goal_effort", label: "My Effort (hrs)" },
@@ -22,12 +19,7 @@ const editableFields = [
   { key: "goal_team_members", label: "Associated Team Members" },
 ];
 
-const PopScreen: React.FC<PopScreenProps> = ({
-  isOpen,
-  goal,
-  onClose,
-  onSubmit,
-}) => {
+const PopScreen: React.FC<PopScreenProps> = ({ isOpen, goal, onClose, onSubmit }) => {
   const [form, setForm] = useState({ ...goal });
 
   useEffect(() => {
@@ -36,25 +28,20 @@ const PopScreen: React.FC<PopScreenProps> = ({
 
   if (!isOpen || !goal) return null;
 
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setForm((prev: typeof form) => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Clone form and transform goal_own_rating if present
     const submitForm = { ...form };
     if (submitForm.goal_own_rating) {
       submitForm.goal_own_rating = submitForm.goal_own_rating.charAt(0).toUpperCase();
     }
-    console.log("Form data on submit:", submitForm); // Print all form data (hidden and visible)
     onSubmit(submitForm);
   };
 
-  // Grouped fields for custom layout
   const topFields = [
     { key: "goal_week_number", label: "Week #" },
     { key: "goal_week_start_date", label: "Start Date" },
@@ -66,192 +53,144 @@ const PopScreen: React.FC<PopScreenProps> = ({
     { key: "goal_orange_threshold", label: "Orange Threshold" },
     { key: "goal_red_threshold", label: "Red Threshold" },
   ];
+
   const titleFields = [{ key: "goal_description", label: "Description" }];
   const ratingFields = [
     { key: "goal_own_rating", label: "Self Rating" },
     { key: "goal_status", label: "Status" },
-    { key: "goal_effort", label: "My Effort(in hrs)" },
+    { key: "goal_effort", label: "My Effort (hrs)" },
   ];
+
   const auditorFields = [
     { key: "goal_auditor_rating", label: "Auditor Rating" },
     { key: "goal_auditor_comments", label: "Auditor Comments" },
   ];
 
-  // Render a field (read-only or editable)
   const renderField = (key: string, label: string) => {
-    // Hide these fields from UI
-    if (
-      [
-        "goal_rec_id",
-        "goal_emp_id",
-        "goal_emp_code",
-        "goals_week_co_id",
-      ].includes(key)
-    )
-      return null;
+    if (["goal_rec_id", "goal_emp_id", "goal_emp_code", "goals_week_co_id"].includes(key)) return null;
 
-    // Dropdown for Own Rating
-    if (key === "goal_own_rating") {
+    if (key === "goal_own_rating" || key === "goal_status") {
+      const options =
+        key === "goal_own_rating"
+          ? ["", "Green", "Red", "Orange"]
+          : ["", "In progress", "Completed", "Pending"];
       return (
-        <div className="flex flex-col min-w-[100px]">
+        <div className="flex flex-col text-sm">
           <label className="font-semibold mb-1 capitalize">{label}</label>
           <select
             name={key}
             value={form[key] ?? ""}
             onChange={handleChange}
-            className="border rounded px-2 py-1"
+            className="border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
-            <option value="">Select</option>
-            <option value="Green">Green</option>
-            <option value="Red">Red</option>
-            <option value="Orange">Orange</option>
+            {options.map((opt) => (
+              <option key={opt} value={opt}>
+                {opt || "Select"}
+              </option>
+            ))}
           </select>
         </div>
       );
     }
-    // Dropdown for Status
-    if (key === "goal_status") {
-      return (
-        <div className="flex flex-col min-w-[100px]">
-          <label className="font-semibold mb-1 capitalize">{label}</label>
-          <select
-            name={key}
-            value={form[key] ?? ""}
-            onChange={handleChange}
-            className="border rounded px-2 py-1"
-          >
-            <option value="">Select</option>
-            <option value="In progress">In progress</option>
-            <option value="Completed">Completed</option>
-            <option value="Pending">Pending</option>
-          </select>
-        </div>
-      );
-    }
+
     if (editableFields.some((field) => field.key === key)) {
-      const editableField = editableFields.find((field) => field.key === key);
-      if (key === "goal_effort") {
-        return (
-          <div className="flex flex-col min-w-[50px]">
-            <label className="font-semibold mb-1 capitalize">{label}</label>
+      return (
+        <div className="flex flex-col text-sm">
+          <label className="font-semibold mb-1 capitalize">{label}</label>
+          {key === "goal_effort" ? (
             <input
               type="number"
               name={key}
               value={form[key] ?? ""}
               onChange={handleChange}
-              className="border rounded px-2 py-1"
+              className="border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
-          </div>
-        );
-      } else {
-        return (
-          <div className="flex flex-col min-w-[120px]">
-            <label className="font-semibold mb-1 capitalize">{label}</label>
+          ) : (
             <textarea
               name={key}
               value={form[key] ?? ""}
               onChange={handleChange}
-              className={`border rounded px-2 py-2 ${key === "goal_team_members" ? "h-10" : "h-40"}`}
-              rows={2}
+              className={`border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none ${
+                key === "goal_team_members" ? "h-10" : "h-28"
+              }`}
+              rows={3}
             />
-          </div>
-        );
-      }
-    } else {
-      return (
-        <div className="flex flex-col min-w-[120px]">
-          <label className="font-semibold mb-1  capitalize">{label}</label>
-          <div className="bg-gray-300 px-2 py-1 rounded text-gray-700">
-            {form[key]}
-          </div>
+          )}
         </div>
       );
     }
+
+    return (
+      <div className="flex flex-col text-sm">
+        <label className="font-semibold mb-1 capitalize">{label}</label>
+        <div className="bg-gray-100 px-3 py-2 rounded border border-gray-200 text-gray-800">
+          {form[key]}
+        </div>
+      </div>
+    );
   };
 
   return (
-    <div
-      className="absolute left-0 top-0 w-full h-full z-30 bg-white/80 backdrop-blur-sm flex items-center justify-center"
-      style={{ minHeight: "100%", minWidth: "100%" }}
-    >
-      <div className="relative w-full max-w-[1300px] mx-auto my-8 bg-white rounded-lg shadow-lg p-6 overflow-y-auto max-h-[80vh] border border-gray-200">
-        <h2 className="text-lg font-bold bg-gray-700 text-white px-2 py-2 rounded-t-xl mb-4">Update Goal</h2>
-        {/* Top fields in one line */}
-        <div className="flex flex-nowrap gap-8 mb-4 mt-2 overflow-x-auto">
+    <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center">
+      <div className="relative w-full max-w-6xl mx-auto bg-white rounded-xl shadow-xl p-6 overflow-y-auto max-h-[90vh] border border-gray-300">
+        <h2 className="text-2xl text-center font-bold bg-gray-900 text-white px-4 py-3 rounded-t-lg mb-4 shadow">
+          Update Goal
+        </h2>
+
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-6">
           {topFields.map((f) => (
-            <div
-              key={f.key}
-              className="flex flex-col text-sm items-start w-24 min-w-[5rem]"
-            >
-              {/* <label className="font-semibold mb-1 text-xs">{f.label}</label> */}
-              {/* Render value with fixed width */}
-              <div className="w-20">{renderField(f.key, f.label)}</div>
-            </div>
+            <div key={f.key}>{renderField(f.key, f.label)}</div>
           ))}
         </div>
-        {/* Title/desc/target in one line */}
-        <div className="flex flex-nowrap gap-8 mb-4 overflow-x-auto ">
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
           {titleFields.map((f) => (
-            <div
-              key={f.key}
-              className="flex flex-col text-sm items-start w-full min-w-[5rem]"
-            >
-              {/* <label className="font-semibold mb-1 text-xs">{f.label}</label> */}
-              <div className="w-full">{renderField(f.key, f.label)}</div>
-            </div>
+            <div key={f.key}>{renderField(f.key, f.label)}</div>
           ))}
         </div>
-        {/* Own rating and status in one line */}
-        <div className="flex flex-nowrap gap-8 mb-4 overflow-x-auto ">
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-6">
           {ratingFields.map((f) => (
-            <div
-              key={f.key}
-              className="flex flex-col text-sm items-start w-24 min-w-[4rem]"
-            >
-              <div className="w-30">{renderField(f.key, f.label)}</div>
-            </div>
+            <div key={f.key}>{renderField(f.key, f.label)}</div>
           ))}
         </div>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {/* All other fields except auditor fields */}
-          {Object.entries(goal).map(([key, value]) => {
+
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {Object.entries(goal).map(([key]) => {
             if (
               topFields.some((f) => f.key === key) ||
               titleFields.some((f) => f.key === key) ||
               ratingFields.some((f) => f.key === key) ||
               auditorFields.some((f) => f.key === key) ||
-              [
-                "goal_rec_id",
-                "goal_emp_id",
-                "goal_emp_code",
-                "goals_week_co_id",
-              ].includes(key)
+              ["goal_rec_id", "goal_emp_id", "goal_emp_code", "goals_week_co_id"].includes(key)
             ) {
               return null;
             }
             const editable = editableFields.find((f) => f.key === key);
-            return renderField(
-              key,
-              editable ? editable.label : key.replace(/_/g, " ")
+            return (
+              <div key={key}>
+                {renderField(key, editable ? editable.label : key.replace(/_/g, " "))}
+              </div>
             );
           })}
-          {/* Goal team members field (editable) */}
-          {/* {renderField("goal_team_members", "Associated Team Members")} */}
-          {/* Auditor fields at the bottom */}
-          <div className="flex flex-wrap gap-4 mt-2">
-            {auditorFields.map((f) => renderField(f.key, f.label))}
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {auditorFields.map((f) => (
+              <div key={f.key}>{renderField(f.key, f.label)}</div>
+            ))}
           </div>
-          <div className="flex justify-end gap-2 mt-6 sticky bottom-0 bg-white pt-4 pb-2 z-10">
+
+          <div className="flex justify-end gap-3 pt-6 border-t mt-6">
             <button
               type="button"
-              className="px-4 py-2 rounded bg-gray-300 hover:bg-gray-400"
+              className="px-4 py-2 rounded bg-gray-300 hover:bg-gray-400 text-sm font-medium"
               onClick={onClose}
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-4 py-2 rounded bg-blue-900 text-white hover:bg-blue-700"
+              className="px-4 py-2 rounded bg-blue-800 hover:bg-blue-600 text-white text-sm font-medium"
             >
               Save
             </button>

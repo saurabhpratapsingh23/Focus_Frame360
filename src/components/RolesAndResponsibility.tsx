@@ -36,8 +36,9 @@ const RolesAndResponsibility: React.FC = () => {
     if (userStr) {
       try {
         const parsedUser = JSON.parse(userStr);
+        // empID = 'kyc10019';
         empID = parsedUser.e_emp_code;
-        console.log('Parsed empID:', empID);
+        // console.log('Parsed empID:', empID);
       } catch (e) {
         console.error('Error parsing user data:', e);
         setError('Invalid user data');
@@ -111,15 +112,15 @@ const RolesAndResponsibility: React.FC = () => {
     //   </table>
     // </div>
      <div className="bg-white rounded-md shadow p-4">
-          <h3 className="text-lg  px-2  py-2 text-white font-bold mb-4 bg-gray-700 rounded-t-xl">My Role</h3>
-          <h6 className="py-2 px-2 mb-1">My Selected Roles</h6>
+          <h3 className="text-2xl px-2  py-4 text-white font-bold mb-4 bg-gray-700 text-center rounded-t-xl">My Roles and Responsibilities</h3>
+          {/* <h6 className="py-2 px-2 mb-1">My Selected Roles</h6> */}
           <table className="w-full table-auto text-left text-sm border-t border-gray-200">
             <thead className="bg-gray-100">
               <tr>
-                <th className="p-2 w-[70%] font-medium">Function Title</th>
-                <th className="p-2 w-[70%] font-medium">Functional Role</th>
-                <th className="p-2 text-center font-medium">Assigned Responsibility</th>
-                <th className="p-2 text-center font-medium">Actions</th>
+                <th className="p-2 w-[50%] bg-blue-100 font-lg text-[130%] font-bold">Function Title</th>
+                <th className="p-2 w-[20%] bg-blue-100 font-lg text-[130%] font-bold">Functional Role</th>
+                <th className="p-1 w-[20%] bg-blue-100 font-lg text-[130%] text-center font-bold">Assigned Responsibility</th>
+                <th className="p-2 bg-blue-100 font-lg text-[130%] text-center font-bold">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -128,12 +129,12 @@ const RolesAndResponsibility: React.FC = () => {
 
                     <td className="p-2">{item.FunctionTitle}</td>
                     <td className="p-2">{item.Role.erole_function_code}</td>
-                    <td className="p-2 text-center">
-                      {item.Role.erole_perform ? <span className="bg-gray-500 text-white text-xs rounded-full px-2 py-1 opacity-75">Perform</span> : null}
-                      {item.Role.erole_rescue ? <span className="bg-gray-500 text-white text-xs rounded-full px-2 py-1 opacity-75">Rescue</span> : null}
-                      {item.Role.erole_manage ? <span className="bg-gray-500 text-white text-xs rounded-full px-2 py-1 opacity-75">Manage</span> : null}
-                      {item.Role.erole_audit ? <span className="bg-gray-500 text-white text-xs rounded-full px-2 py-1 opacity-75">Audit</span> : null}
-                      {item.Role.erole_define ? <span className="bg-gray-500 text-white text-xs rounded-full px-2 py-1 opacity-75">Define</span> : null}
+                    <td className="p-2  text-center">
+                      {item.Role.erole_perform ? <span className="bg-gray-500 text-white text-xs rounded-full px-4 py-1 opacity-75 mr-2">Perform</span> : null}
+                      {item.Role.erole_rescue ? <span className="bg-gray-500 text-white text-xs rounded-full px-4 py-1 opacity-75 mr-2">Rescue</span> : null}
+                      {item.Role.erole_manage ? <span className="bg-gray-500 text-white text-xs rounded-full px-4 py-1 opacity-75 mr-2">Manage</span> : null}
+                      {item.Role.erole_audit ? <span className="bg-gray-500 text-white text-xs rounded-full px-4 py-1 opacity-75 mr-2">Audit</span> : null}
+                      {item.Role.erole_define ? <span className="bg-gray-500 text-white text-xs rounded-full px-4 py-1 opacity-75 mr-2">Define</span> : null}
                     </td>
                     <td className="p-2 text-center">
                       <button className="bg-blue-900 hover:bg-blue-700 text-white px-3 py-1 text-sm rounded-md" title="Edit" onClick={() => setEditRolesPopOpen(true)}>Edit</button>

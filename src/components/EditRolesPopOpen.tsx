@@ -6,30 +6,28 @@ const EditRolesPopOpen = ({ isOpen, onClose }) => {
     <div className="fixed inset-0 z-40 bg-black bg-opacity-30 flex items-center justify-center">
       <div className="bg-gray-100 min-h-[80vh] max-h-[90vh] w-full max-w-6xl p-6 rounded-lg shadow-lg relative overflow-y-auto">
         <button
-          className="absolute top-3 right-4 text-gray-500 hover:text-gray-700 text-2xl font-bold"
+          className="absolute top-7 right-9 text-red-500 hover:text-gray-700 text-2xl font-bold"
           onClick={onClose}
           title="Close"
         >
           ×
         </button>
         <div className="max-w-7xl mx-auto space-y-6">
-          {/* Functional Division Selector */}
-{/* <div className='text-lg font-semibold text-gray-700 mb-2' >Roles Edit Sheet</div> */}
+         
 
-          <div>
-            <h1 className='text-2xl font-bold text-gray-700 mb-2'>Roles Edit Sheet</h1>
-            <h6 className="text-sm font-semibold text-gray-700 mb-1 mt-3 px-2 py-2">Your Functional Division</h6>
-            
-              <p className='w-64 border-gray-300 rounded-md shadow-sm text-sm p-2'>Development Function</p>
+         
+            <h6 className='text-2xl text-center font-bold text-white bg-gray-900 px-4 py-2 rounded-t-md'>Roles Edit Sheet</h6>
+             <h5 className="text-lg text-center font-bold text-gray-700 mb-1">Functional Role & Responsibility (I am in)</h5>
+            <div className="flex items-center gap-2 px-2 py-2 mb-2">
+              <p className="text-sm text-gray-700 m-0">Your Functional Division :</p>
+              <h2 className="w-70 border-gray-300 font-bold rounded-md text-lg p-2">Development Function</h2>
               {/* <option>Development Function</option> */}
-            
-          </div>
+            </div>
           <div>
-            <h5 className="text-lg font-semibold text-gray-700 mb-2">Functional Role & Responsibility (I am in)</h5>
+           
             <div className="bg-white shadow rounded-md overflow-hidden">
-              <div className="flex justify-between items-center px-4 py-3 border-b bg-gray-100">
-                <span className="font-semibold">Key Functional Role & Responsibility</span>
-                {/* <button className="bg-blue-600 hover:bg-blue-700 text-white text-sm px-3 py-1 rounded">Add</button> */}
+              <div className="flex justify-center bg-blue-900 text-center text-white  px-4 py-3 border-b">
+                <span className="font-bold ">Key Functional Role & Responsibility</span>
               </div>
               <div className="overflow-auto">
               <table className="table-auto w-full text-sm text-center border border-gray-300">

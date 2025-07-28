@@ -228,7 +228,7 @@ const EmsPerformance: React.FC<EmsPerformanceProps> = () => {
           <table className="min-w-full text-sm mb-4  text-left   ">
             <thead className="bg-gray-200 text-gray-800 font-medium  ">
               <tr>
-                <th className=" rounded-tl-lg px-4 py-2">Week</th>
+                <th className=" rounded-tl-lg px-6 py-2">Week</th>
                 <th className=" px-4 py-2">Weekly Success</th>
                 <th className=" px-2 py-2">WD</th>
                 <th className=" px-2 py-2">WFH</th>
@@ -252,18 +252,18 @@ const EmsPerformance: React.FC<EmsPerformanceProps> = () => {
 
               </tr>
             </thead>
-            <tbody className="text-gray-700">
+            <tbody className="text-gray-700 border border-gray-200">
               {weeklySummary.map((row, i) => (
                 <tr key={i} className={i%2===1? "bg-gray-200":""}>
                   <td className=" px-4 py-2">{formatDate(row.week_start_date)} – {formatDate(row.week_end_date)}</td>
                   <td className=" px-4 py-2">{row.weekly_success}</td>
-                  <td className=" px-2 py-2">{row.work_days}</td>
-                  <td className=" px-2 py-2">{row.WFH}</td>
-                  <td className=" px-2 py-2">{row.WFO}</td>
-                  <td className=" px-2 py-2">{row.Efforts}</td>
-                  <td className=" px-2 py-2">{row.Leaves}</td>
-                  <td className=" px-2 py-2">{row.Holidays}</td>
-                  <td className=" px-2 py-2">{row.extra_days}</td>
+                  <td className=" px-2 py-2 text-center">{row.work_days}</td>
+                  <td className=" px-2 py-2 text-center">{row.WFH}</td>
+                  <td className=" px-2 py-2 text-center">{row.WFO}</td>
+                  <td className=" px-2 py-2 text-center">{row.Efforts}</td>
+                  <td className=" px-2 py-2 text-center">{row.Leaves}</td>
+                  <td className=" px-2 py-2 text-center">{row.Holidays}</td>
+                  <td className=" px-2 py-2 text-center">{row.extra_days}</td>
                   <td className=" px-4 py-2">{row.weekly_challenges || '–'}</td>
                   <td className=" px-4 py-2">{row.weekly_unfinished_tasks || '–'}</td>
                   <td className=" px-4 py-2">{row.weekly_next_actions || '–'}</td>

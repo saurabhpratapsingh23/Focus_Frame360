@@ -247,18 +247,18 @@ const GoalTable: React.FC = () => {
     <div className="space-y-8">
       {/* Table 1: Goals */}
       <div>
-        <h2 className="text-lg  px-2  py-2 text-white font-bold mb-4 bg-gray-700 rounded-t-xl">Goals (Weekly Details)</h2>
+        <h2 className="text-2xl text-center  px-2  py-4 text-white font-bold mb-4 bg-gray-700 rounded-t-xl">Goals (Weekly Details)</h2>
         <div className="overflow-x-auto">
           <table className="min-w-full text-sm ">
-            <thead className="bg-gray-200">
+            <thead className="bg-blue-100 text-[95%] ">
               <tr>
-                <th className="rounded-tl-lg px-2 py-1">Week #</th>
-                <th className=" px-2 py-1">Week Start</th>
-                <th className=" px-2 py-1">Week End</th>
+                <th className="rounded-tl-lg font-bold px-2 py-1">Week #</th>
+                <th className=" px-3 py-1">Week Start</th>
+                <th className=" px-3 py-1">Week End</th>
                 <th className=" px-2 py-1">Goal ID</th>
                 <th className=" px-2 py-1">Title</th>
                 <th className=" px-2 py-1">Description</th>
-                <th className=" px-2 py-1">Target</th>
+                <th className=" px-2 py-1 ">Target</th>
                 <th className=" px-2 py-1">Action Performed</th>
                 <th className=" px-2 py-1">Challenges</th>
                 <th className=" px-2 py-1">Unfinished Tasks</th>
@@ -271,7 +271,7 @@ const GoalTable: React.FC = () => {
                 <th className="rounded-tr-lg px-2 py-2">Update Summary</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className='border border-gray-200 '>
               {goals.map((g, i) => (
                 <tr key={i} className={goalRowClasses[i]}>
                   <td className=" px-2 py-1 text-center">{g.goal_week_number}</td>
@@ -280,7 +280,7 @@ const GoalTable: React.FC = () => {
                   <td className=" px-2 py-1">{g.goal_id.trim()}</td>
                   <td className=" px-2 py-1">{g.goal_title}</td>
                   <td className=" px-2 py-1 whitespace-pre-line">{g.goal_description}</td>
-                  <td className=" px-2 py-1">{g.goal_target}</td>
+                  <td className=" px-2 py-1 text-center">{g.goal_target}</td>
                   <td className=" px-2 py-1 whitespace-pre-line">{g.goal_action_performed}</td>
                   <td className=" px-2 py-1 whitespace-pre-line">{g.goal_challenges}</td>
                   <td className=" px-2 py-1 whitespace-pre-line">{g.goal_unfinished_tasks}</td>
@@ -324,12 +324,12 @@ const GoalTable: React.FC = () => {
 
       {/* Table 2: Goal Summary */}
       <div>
-        <h2 className="text-lg  px-2  py-2 text-white font-bold mb-4 bg-gray-700 rounded-t-xl">Goal Summary</h2>
+        <h2 className="text-2xl text-center  px-2  py-4 text-white font-bold mb-4 bg-gray-700 rounded-t-xl">Goal Summary</h2>
         <div className="overflow-x-auto">
-          <table className="min-w-full text-sm ">
-            <thead className="bg-gray-200">
+          <table className="min-w-full text-[14px] ">
+            <thead className="bg-blue-100 text-[120%]">
               <tr>
-                <th className="rounded-tl-lg px-2 py-1">Goal ID</th>
+                <th className="rounded-tl-lg px-4 py-1">Goal ID</th>
                 <th className=" px-2 py-1">Title</th>
                 <th className=" px-2 py-1">Description</th>
                 <th className=" px-2 py-1">Efforts</th>
@@ -337,13 +337,13 @@ const GoalTable: React.FC = () => {
                 {/* <th className="px-2 py-1">Update Summary</th> */}
               </tr>
             </thead>
-            <tbody>
+            <tbody className='border border-gray-200 '>
               {goalsSummary.map((summary, i) => (
                 <tr key={i} className={summaryRowClasses[i]}>
                   <td className=" px-2 py-2">{summary.goal_es_id}</td>
-                  <td className=" px-2 py-2">{summary.goal_es_title}</td>
+                  <td className=" px-2 py-2 font-bold">{summary.goal_es_title}</td>
                   <td className=" px-2 py-2 whitespace-pre-line">{summary.goal_es_description}</td>
-                  <td className=" px-2 py-2">{summary.goal_es_effort}</td>
+                  <td className=" px-2 py-2 text-center">{summary.goal_es_effort}</td>
                   <td className=" px-2 py-2 text-center">{summary.goal_es_efforts_percentage}</td>
                   {/* <td className="px-2 py-2">
                     <button className="bg-blue-900 hover:bg-blue-700 text-white px-3 py-1 text-sm rounded-md" onClick={() => handleUpdateClick(summary as any)}>Update</button>
