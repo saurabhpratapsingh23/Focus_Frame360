@@ -112,7 +112,7 @@ const RolesAndResponsibility: React.FC = () => {
     //   </table>
     // </div>
      <div className="bg-white rounded-md shadow p-4">
-          <h3 className="text-2xl px-2  py-4 text-white font-bold mb-4 bg-gray-700 text-center rounded-t-xl">My Roles and Responsibilities</h3>
+          <h3 className="text-[25px] px-2  py-2 text-white font-bold mb-4 bg-gray-900 text-center rounded-t-xl">My Roles and Responsibilities</h3>
           {/* <h6 className="py-2 px-2 mb-1">My Selected Roles</h6> */}
           <table className="w-full table-auto text-left text-sm border-t border-gray-200">
             <thead className="bg-gray-100">

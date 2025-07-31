@@ -132,16 +132,19 @@ const PopScreen: React.FC<PopScreenProps> = ({ isOpen, goal, onClose, onSubmit }
 
   return (
     <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center">
-      <div className="relative w-full max-w-6xl mx-auto bg-white rounded-xl shadow-xl p-6 overflow-y-auto max-h-[90vh] border border-gray-300">
-        <h2 className="text-2xl text-center font-bold bg-gray-900 text-white px-4 py-3 rounded-t-lg mb-4 shadow">
-          Update Goal
+      <div className="relative w-full max-w-6xl mx-auto bg-white rounded-xl shadow-xl p-6 overflow-y-auto max-h-[90vh] border border-gray-900 ">
+        <h2 className="text-2xl text-center mt-0 font-bold bg-gray-900 text-white px-4 py-3 rounded-t-lg rounded-b-lg mb-4 w-full shadow">
+          UPDATE GOAL
         </h2>
 
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-6">
-          {topFields.map((f) => (
-            <div key={f.key}>{renderField(f.key, f.label)}</div>
-          ))}
-        </div>
+       {/* Top fields – single horizontal line */}
+<div className="flex flex-nowrap gap-4 mb-6 overflow-x-auto">
+  {topFields.map((f) => (
+    <div key={f.key} className="flex-shrink-0">
+      {renderField(f.key, f.label)}
+    </div>
+  ))}
+</div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
           {titleFields.map((f) => (
@@ -149,9 +152,10 @@ const PopScreen: React.FC<PopScreenProps> = ({ isOpen, goal, onClose, onSubmit }
           ))}
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-6">
+        <div className="grid grid-cols-0 sm:grid-cols-2 md:grid-cols-3 gap-0 mb-6 ">
           {ratingFields.map((f) => (
-            <div key={f.key}>{renderField(f.key, f.label)}</div>
+            <div key={f.key} className="w-50">
+             {renderField(f.key, f.label)}</div>
           ))}
         </div>
 

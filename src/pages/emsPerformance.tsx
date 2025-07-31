@@ -204,7 +204,7 @@ const EmsPerformance: React.FC<EmsPerformanceProps> = () => {
       {/* Profile Card */}
       <div className="bg-white p-4 rounded-2xl max-w-8xl mx-auto shadow-md mb-4">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-2xl font-bold ">Perfomance Report</h2>
+          <h2 className="text-2xl font-bold hover:underline">Perfomance Report</h2>
           <button
             className="bg-blue-900 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-semibold shadow"
             style={{ minWidth: '160px' }}
