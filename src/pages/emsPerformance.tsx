@@ -70,6 +70,8 @@ const EmsPerformance: React.FC<EmsPerformanceProps> = () => {
   const [weeklyPopOpen, setWeeklyPopOpen] = useState(false);
   const [weeklyPopData, setWeeklyPopData] = useState<any>(null);
   const [rolesPopOpen, setRolesPopOpen] = useState(false);
+  const [selectedEmpId, setSelectedEmpId] = useState<number>(13);
+  const [selectedWeekId, setSelectedWeekId] = useState<number>(14);
 
   useEffect(() => {
     // Get emp_code from localStorage's currentUser
@@ -208,7 +210,14 @@ const EmsPerformance: React.FC<EmsPerformanceProps> = () => {
           <button
             className="bg-blue-900 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-semibold shadow"
             style={{ minWidth: '160px' }}
-            onClick={() => setRolesPopOpen(true)}
+            onClick={() => {
+              // Use the first available employee and week IDs from the data, or defaults
+              if (weeklySummary.length > 0) {
+                setSelectedEmpId(weeklySummary[0].ws_emp_id);
+                setSelectedWeekId(weeklySummary[0].ws_week_id);
+              }
+              setRolesPopOpen(true);
+            }}
           >
             Edit Weekly Data
           </button>
@@ -353,7 +362,12 @@ const EmsPerformance: React.FC<EmsPerformanceProps> = () => {
         }}
       />
       {/* RolesPopScreen popup */}
-      <RolesPopScreen isOpen={rolesPopOpen} onClose={() => setRolesPopOpen(false)} />
+      <RolesPopScreen 
+        isOpen={rolesPopOpen} 
+        onClose={() => setRolesPopOpen(false)}
+        empId={selectedEmpId}
+        weekId={selectedWeekId}
+      />
       <ToastContainer />
     </div>
   );
