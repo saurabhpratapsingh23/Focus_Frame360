@@ -58,35 +58,66 @@ const GoalTable: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [popOpen, setPopOpen] = useState(false);
   const [selectedGoal, setSelectedGoal] = useState<Goal | null>(null);
+  const [displayedGoals, setDisplayedGoals] = useState<Goal[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const itemsPerPage = 15;
 
   useEffect(() => {
-    const userData = localStorage.getItem('currentUser');
-    let empID = '';
-    if (userData) {
-      try {
-        const parsedUser = JSON.parse(userData);
-        empID = parsedUser.e_emp_code;
-      } catch (e) {
-        setError('Invalid user data');
-        setLoading(false);
-        return;
-      }
-    } else {
-      setError('User not logged in');
+    // Get emp_id from sessionStorage
+    const empId = sessionStorage.getItem('e_emp_id');
+    if (!empId) {
+      setError('Employee ID not found. Please login again.');
       setLoading(false);
       return;
     }
+    
     const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
     setLoading(true);
     setError(null);
-    fetch(`${API_BASE_URL}/pms/api/e/wg/${empID}?weeks=16,17,18`)
+    fetch(`${API_BASE_URL}/pms/api/e/wg/${empId}`)
       .then(res => {
         if (!res.ok) throw new Error(`Goals API error: ${res.status}`);
         return res.json();
       })
       .then(data => {
-        setGoals(data.goals || []);
+        const goalsData = data.goals || [];
+        
+        // Sort by current month first, then descending order
+        const sortedGoals = goalsData.sort((a: any, b: any) => {
+          const currentDate = new Date();
+          const currentMonth = currentDate.getMonth();
+          const currentYear = currentDate.getFullYear();
+          
+          const dateA = new Date(a.goal_week_start_date);
+          const dateB = new Date(b.goal_week_start_date);
+          
+          const monthA = dateA.getMonth();
+          const monthB = dateB.getMonth();
+          const yearA = dateA.getFullYear();
+          const yearB = dateB.getFullYear();
+          
+          // Check if both dates are in current month and year
+          const isCurrentMonthA = monthA === currentMonth && yearA === currentYear;
+          const isCurrentMonthB = monthB === currentMonth && yearB === currentYear;
+          
+          // Current month data should come first
+          if (isCurrentMonthA && !isCurrentMonthB) return -1;
+          if (!isCurrentMonthA && isCurrentMonthB) return 1;
+          
+          // If both are current month or both are not, sort by date descending
+          return dateB.getTime() - dateA.getTime();
+        });
+        
+        setGoals(sortedGoals);
         setGoalsSummary(data.goalsSummary || []);
+        
+        // Initialize pagination
+        const initialDisplay = sortedGoals.slice(0, itemsPerPage);
+        setDisplayedGoals(initialDisplay);
+        setHasMore(sortedGoals.length > itemsPerPage);
+        setCurrentPage(1);
+        
         setLoading(false);
       })
       .catch(err => {
@@ -195,33 +226,60 @@ const GoalTable: React.FC = () => {
 
   // Add refreshGoals function to re-fetch goals and summary
   const refreshGoals = () => {
-    const userData = localStorage.getItem('currentUser');
-    let empID = '';
-    if (userData) {
-      try {
-        const parsedUser = JSON.parse(userData);
-        empID = parsedUser.e_emp_code;
-      } catch (e) {
-        setError('Invalid user data');
-        setLoading(false);
-        return;
-      }
-    } else {
-      setError('User not logged in');
+    // Get emp_id from sessionStorage
+    const empId = sessionStorage.getItem('e_emp_id');
+    if (!empId) {
+      setError('Employee ID not found. Please login again.');
       setLoading(false);
       return;
     }
+    
     const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
     setLoading(true);
     setError(null);
-    fetch(`${API_BASE_URL}/pms/api/e/wg/${empID}?weeks=16,17,18`)
+    fetch(`${API_BASE_URL}/pms/api/e/wg/${empId}`)
       .then(res => {
         if (!res.ok) throw new Error(`Goals API error: ${res.status}`);
         return res.json();
       })
       .then(data => {
-        setGoals(data.goals || []);
+        const goalsData = data.goals || [];
+        
+        // Sort by current month first, then descending order
+        const sortedGoals = goalsData.sort((a: any, b: any) => {
+          const currentDate = new Date();
+          const currentMonth = currentDate.getMonth();
+          const currentYear = currentDate.getFullYear();
+          
+          const dateA = new Date(a.goal_week_start_date);
+          const dateB = new Date(b.goal_week_start_date);
+          
+          const monthA = dateA.getMonth();
+          const monthB = dateB.getMonth();
+          const yearA = dateA.getFullYear();
+          const yearB = dateB.getFullYear();
+          
+          // Check if both dates are in current month and year
+          const isCurrentMonthA = monthA === currentMonth && yearA === currentYear;
+          const isCurrentMonthB = monthB === currentMonth && yearB === currentYear;
+          
+          // Current month data should come first
+          if (isCurrentMonthA && !isCurrentMonthB) return -1;
+          if (!isCurrentMonthA && isCurrentMonthB) return 1;
+          
+          // If both are current month or both are not, sort by date descending
+          return dateB.getTime() - dateA.getTime();
+        });
+        
+        setGoals(sortedGoals);
         setGoalsSummary(data.goalsSummary || []);
+        
+        // Initialize pagination
+        const initialDisplay = sortedGoals.slice(0, itemsPerPage);
+        setDisplayedGoals(initialDisplay);
+        setHasMore(sortedGoals.length > itemsPerPage);
+        setCurrentPage(1);
+        
         setLoading(false);
       })
       .catch(err => {
@@ -230,8 +288,20 @@ const GoalTable: React.FC = () => {
       });
   };
 
+  // Add load more functionality
+  const loadMore = () => {
+    const nextPage = currentPage + 1;
+    const startIndex = 0;
+    const endIndex = nextPage * itemsPerPage;
+    const newDisplayedGoals = goals.slice(startIndex, endIndex);
+    
+    setDisplayedGoals(newDisplayedGoals);
+    setCurrentPage(nextPage);
+    setHasMore(endIndex < goals.length);
+  };
+
   // Grouped row classes for zebra striping by goal_id
-  const goalRowClasses = getGroupedRowClasses(goals, g => g.goal_id.trim());
+  const goalRowClasses = getGroupedRowClasses(displayedGoals, g => g.goal_id.trim());
   const summaryRowClasses = getGroupedRowClasses(goalsSummary, s => s.goal_es_id.trim());
 
   // Helper to map rating codes to color names
@@ -252,27 +322,27 @@ const GoalTable: React.FC = () => {
           <table className="min-w-full text-sm ">
             <thead className="bg-blue-100 text-[95%] ">
               <tr>
-                <th className="border border-gray-300 rounded-tl-lg font-bold px-2 py-1">Week #</th>
-                <th className="border border-gray-300  px-3 py-1">Week Start</th>
-                <th className="border border-gray-300 px-3 py-1">Week End</th>
-                <th className="border border-gray-300 px-2 py-1">Goal ID</th>
-                <th className="border border-gray-300 px-2 py-1">Title</th>
-                <th className="border border-gray-300 px-2 py-1">Description</th>
-                <th className="border border-gray-300 px-2 py-1 ">Target</th>
-                <th className="border border-gray-300 px-2 py-1">Action Performed</th>
-                <th className="border border-gray-300 px-2 py-1">Challenges</th>
-                <th className="border border-gray-300 px-2 py-1">Unfinished Tasks</th>
-                <th className="border border-gray-300 px-2 py-1">Next Actions</th>
-                <th className="border border-gray-300 px-2 py-1">Effort</th>
-                <th className="border border-gray-300 px-2 py-1">Own Rating</th>
-                <th className="border border-gray-300 px-2 py-1">Auditor Rating</th>
-                <th className="border border-gray-300 px-2 py-1">Auditor Comments</th>
-                <th className="border border-gray-300 px-2 py-1">Status</th>
-                <th className="border border-gray-300 rounded-tr-lg px-2 py-2">Update Summary</th>
+                <th className="border border-gray-100 rounded-tl-lg font-bold px-2 py-1">Week #</th>
+                <th className="border border-gray-100  px-3 py-1">Week Start</th>
+                <th className="border border-gray-100 px-3 py-1">Week End</th>
+                <th className="border border-gray-100 px-2 py-1">Goal ID</th>
+                <th className="border border-gray-100 px-2 py-1">Title</th>
+                <th className="border border-gray-100 px-2 py-1">Description</th>
+                <th className="border border-gray-100 px-2 py-1 ">Target</th>
+                <th className="border border-gray-100 px-2 py-1">Action Performed</th>
+                <th className="border border-gray-100 px-2 py-1">Challenges</th>
+                <th className="border border-gray-100 px-2 py-1">Unfinished Tasks</th>
+                <th className="border border-gray-100 px-2 py-1">Next Actions</th>
+                <th className="border border-gray-100 px-2 py-1">Effort</th>
+                <th className="border border-gray-100 px-2 py-1">Own Rating</th>
+                <th className="border border-gray-100 px-2 py-1">Auditor Rating</th>
+                <th className="border border-gray-100 px-2 py-1">Auditor Comments</th>
+                <th className="border border-gray-100 px-2 py-1">Status</th>
+                <th className="border border-gray-100 rounded-tr-lg px-2 py-2">Update Summary</th>
               </tr>
             </thead>
             <tbody className='border border-gray-200 '>
-              {goals.map((g, i) => (
+              {displayedGoals.map((g, i) => (
                 <tr key={i} className={goalRowClasses[i]}>
                   <td className="border border-gray-300  px-2 py-1 text-center">{g.goal_week_number}</td>
                   <td className="border border-gray-300 px-2 py-1">{g.goal_week_start_date}</td>
@@ -320,6 +390,24 @@ const GoalTable: React.FC = () => {
             </tbody>
           </table>
         </div>
+        
+        {/* Load More Button */}
+        {hasMore && (
+          <div className="flex justify-center mt-4 mb-6">
+            <button
+              onClick={loadMore}
+              className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-semibold transition-colors duration-200 shadow-md hover:shadow-lg"
+            >
+              Load More ({displayedGoals.length} of {goals.length} shown)
+            </button>
+          </div>
+        )}
+        
+        {!hasMore && displayedGoals.length > 0 && (
+          <div className="text-center mt-4 mb-6 text-gray-600">
+            Showing all {goals.length} goals
+          </div>
+        )}
       </div>
 
       {/* Table 2: Goal Summary */}

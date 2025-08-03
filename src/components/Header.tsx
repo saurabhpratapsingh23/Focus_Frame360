@@ -23,20 +23,21 @@ const Header: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
   const [lastLoginTime, setLastLoginTime] = useState<string>('');
   const [loginDate, setLoginDate] = useState<string>('');
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   useEffect(() => {
-    // Get user information from localStorage
-    const userData = localStorage.getItem('currentUser');
-    const loginTime = localStorage.getItem('lastLoginTime');
+    // Get user information from sessionStorage
+    const userData = sessionStorage.getItem('currentUser');
+    const loginTime = sessionStorage.getItem('lastLoginTime');
     // Removed mockUsers and savedUsername fallback logic
     if (userData) {
       try {
         const parsedUser = JSON.parse(userData);
         setUser(parsedUser);
       } catch (error) {
-        console.error('Error parsing user data from localStorage:', error);
+        console.error('Error parsing user data from sessionStorage:', error);
         // Clear invalid data
-        localStorage.removeItem('currentUser');
+        sessionStorage.removeItem('currentUser');
         setUser(null);
       }
     }
@@ -46,8 +47,8 @@ const Header: React.FC = () => {
         setLastLoginTime(date.toLocaleString());
         setLoginDate(date.toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' }));
       } catch (error) {
-        console.error('Error parsing login time from localStorage:', error);
-        localStorage.removeItem('lastLoginTime');
+        console.error('Error parsing login time from sessionStorage:', error);
+        sessionStorage.removeItem('lastLoginTime');
         setLastLoginTime('');
         setLoginDate('');
       }
@@ -57,6 +58,15 @@ const Header: React.FC = () => {
       setLoginDate(today.toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' }));
     }
   }, []);
+
+  const handleRefresh = () => {
+    setIsRefreshing(true);
+    
+    // Trigger a page reload to refresh all APIs
+    setTimeout(() => {
+      window.location.reload();
+    }, 500); // Small delay to show the refresh animation
+  };
 
   return (
     <div className="h-18 bg-gray-100 px-5 flex items-center justify-between border-b-2 border-[#1d2a56]">
@@ -68,13 +78,39 @@ const Header: React.FC = () => {
       </div>
       <div className="flex items-center gap-4 text-xs text-gray-600">
         <p>Last Updated: <span className='font-bold text-black'>{user?.e_last_login_date}</span></p>
+        
+        {/* Refresh Button */}
+        <button
+          className={`ml-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-semibold transition-all duration-200 flex items-center gap-2 shadow-md hover:shadow-lg ${
+            isRefreshing ? 'animate-spin' : ''
+          }`}
+          onClick={handleRefresh}
+          disabled={isRefreshing}
+          title="Refresh all data"
+        >
+          <svg 
+            className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} 
+            fill="none" 
+            stroke="currentColor" 
+            viewBox="0 0 24 24"
+          >
+            <path 
+              strokeLinecap="round" 
+              strokeLinejoin="round" 
+              strokeWidth={2} 
+              d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" 
+            />
+          </svg>
+          {isRefreshing ? 'Refreshing...' : 'Refresh'}
+        </button>
+        
         <button
           className="ml-2 px-3 py-1 bg-red-500 hover:bg-red-600 text-white rounded text-xs font-semibold transition"
           onClick={() => {
-            localStorage.removeItem('currentUser');
-            localStorage.removeItem('lastLoginTime');
-            localStorage.removeItem('savedUsername');
-            localStorage.removeItem('savedPassword');
+            sessionStorage.removeItem('currentUser');
+            sessionStorage.removeItem('lastLoginTime');
+            sessionStorage.removeItem('savedUsername');
+            sessionStorage.removeItem('savedPassword');
             window.location.href = '/';
           }}
         >

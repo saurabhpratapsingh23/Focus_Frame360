@@ -1,0 +1,10 @@
+create one attractive refresh button in header file, and when user click it refresh whole project APIs.
+
+In emsPerformance file display Weekly Performance Summary table current month data on top followed by descending. example: august month data, then july, then june, etc.
+also when if backend shows remarks/status = I then print "In-Progress", U then "yet-to-start", C then "Completed", S then "Reviewed"
+
+
+similarly update for GoalTable file, display Table 1: Goals on top current month followed by descending order. 
+also goal table 1 is having too many entries so in a first go show 15 rows and give one button below table to load more rows by clicking on it, will look better and simple.
+
+

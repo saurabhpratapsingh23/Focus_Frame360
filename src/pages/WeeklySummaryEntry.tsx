@@ -69,7 +69,7 @@ const WeeklySummaryEntry: React.FC = () => {
     }, [summarySections.length]);
 
     useEffect(() => {
-      const stored = localStorage.getItem('weekDetails');
+      const stored = sessionStorage.getItem('weekDetails');
       let initial: WeekDetail[] = stored ? JSON.parse(stored) : [{ ...defaultRow }];
       setWeekDetails(initial);
       
@@ -101,7 +101,7 @@ const WeeklySummaryEntry: React.FC = () => {
         updated.push(editRow);
       }
       setWeekDetails(updated);
-      localStorage.setItem('weekDetails', JSON.stringify(updated));
+      sessionStorage.setItem('weekDetails', JSON.stringify(updated));
       navigate('/app/weeklysummary');
     };
 
@@ -112,7 +112,7 @@ const WeeklySummaryEntry: React.FC = () => {
     const handleDelete = (idx: number) => {
       const updated = weekDetails.filter((_, i) => i !== idx);
       setWeekDetails(updated);
-      localStorage.setItem('weekDetails', JSON.stringify(updated));
+      sessionStorage.setItem('weekDetails', JSON.stringify(updated));
     };
 
     const handleEdit = (idx: number) => {

@@ -34,8 +34,8 @@ const WeeklyRoleSummary: React.FC = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Load weekDetails from localStorage
-    const stored = localStorage.getItem('weekDetails');
+    // Load weekDetails from sessionStorage
+    const stored = sessionStorage.getItem('weekDetails');
     if (stored) {
       setWeekDetails(JSON.parse(stored));
     } else {

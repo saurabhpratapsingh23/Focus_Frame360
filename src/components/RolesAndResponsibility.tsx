@@ -28,9 +28,9 @@ const RolesAndResponsibility: React.FC = () => {
   const [editRolesPopOpen, setEditRolesPopOpen] = useState(false);
 
   useEffect(() => {
-    // Get empID from localStorage (currentUser)
-      const userStr = localStorage.getItem('currentUser');
-    //   console.log('User data from localStorage:', userStr);
+    // Get empID from sessionStorage (currentUser)
+      const userStr = sessionStorage.getItem('currentUser');
+    //   console.log('User data from sessionStorage:', userStr);
 
       let empID = '';
     if (userStr) {

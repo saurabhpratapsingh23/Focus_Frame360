@@ -70,36 +70,72 @@ const EmsPerformance: React.FC<EmsPerformanceProps> = () => {
   const [weeklyPopOpen, setWeeklyPopOpen] = useState(false);
   const [weeklyPopData, setWeeklyPopData] = useState<any>(null);
   const [rolesPopOpen, setRolesPopOpen] = useState(false);
+  const [selectedEmpId, setSelectedEmpId] = useState<number>(13);
+  const [selectedWeekId, setSelectedWeekId] = useState<number>(14);
 
   useEffect(() => {
-    // Get emp_code from localStorage's currentUser
-    const userData = localStorage.getItem('currentUser');
-    let empID = '';
-    if (userData) {
-      try {
-        const parsedUser = JSON.parse(userData);
-        empID = parsedUser.e_emp_code;
-      } catch (e) {
-        console.error('Error parsing user data:', e);
-        setError('Invalid user data');
-        setLoading(false);
-        return;
+    // Get emp_id from sessionStorage
+    const empId = sessionStorage.getItem('e_emp_id');
+    console.log('sessionStorage e_emp_id:', empId);
+    console.log('All sessionStorage keys:', Object.keys(sessionStorage));
+    
+    // Debug: Check what's in sessionStorage
+    for (let i = 0; i < sessionStorage.length; i++) {
+      const key = sessionStorage.key(i);
+      if (key) {
+        console.log(`sessionStorage[${key}]:`, sessionStorage.getItem(key));
       }
-    } else {
-      setError('User not logged in');
+    }
+    
+    if (!empId) {
+      // Try to get emp_id from currentUser as fallback
+      const userData = sessionStorage.getItem('currentUser');
+      if (userData) {
+        try {
+          const parsedUser = JSON.parse(userData);
+          console.log('Parsed currentUser:', parsedUser);
+          if (parsedUser.e_emp_id) {
+            console.log('Found emp_id in currentUser:', parsedUser.e_emp_id);
+            // Store it in sessionStorage for future use
+            sessionStorage.setItem('e_emp_id', parsedUser.e_emp_id.toString());
+            // Continue with the API calls using the emp_id from currentUser
+            fetchData(parsedUser.e_emp_id.toString());
+            return;
+          } else if (parsedUser.e_emp_code) {
+            // If we have emp_code but no emp_id, try to use a default emp_id
+            console.log('Found emp_code in currentUser:', parsedUser.e_emp_code);
+            // For now, use a default emp_id (you might need to adjust this)
+            const defaultEmpId = '13'; // Default emp_id
+            sessionStorage.setItem('e_emp_id', defaultEmpId);
+            console.log('Using default emp_id:', defaultEmpId);
+            fetchData(defaultEmpId);
+            return;
+          }
+        } catch (e) {
+          console.error('Error parsing currentUser:', e);
+        }
+      }
+      
+      setError('Employee ID not found. Please login again. Check console for debugging info.');
       setLoading(false);
       return;
     }
+
+    fetchData(empId);
+  }, [API_BASE_URL]);
+
+  const fetchData = (empId: string) => {
     setLoading(true);
     setError(null);
 
     // Fetch employee info and weekly summary/stats in parallel
     Promise.all([
-      fetch(`${API_BASE_URL}/pms/api/e/employee/${empID}`).then(res => {
+      fetch(`${API_BASE_URL}/pms/api/e/employee/${empId}`).then(res => {
+        console.log('api response', res);
         if (!res.ok) throw new Error(`Employee API error: ${res.status}`);
         return res.json();
       }),
-      fetch(`${API_BASE_URL}/pms/api/e/ws/${empID}?weeks=16,17,18`).then(res => {
+      fetch(`${API_BASE_URL}/pms/api/e/ws/${empId}`).then(res => {
         if (!res.ok) throw new Error(`WeeklySummary API error: ${res.status}`);
         return res.json();
       })
@@ -112,7 +148,7 @@ const EmsPerformance: React.FC<EmsPerformanceProps> = () => {
           week_start_date: row.ws_start_date,
           week_end_date: row.ws_end_date,
           weekly_success: row.ws_success,
-          work_days: row.ws_workk_days,
+          work_days: row.ws_work_days,
           WFH: row.ws_WFH,
           WFO: row.ws_WFO,
           Efforts: row.ws_efforts,
@@ -131,7 +167,34 @@ const EmsPerformance: React.FC<EmsPerformanceProps> = () => {
           ws_week_id: row.ws_week_id,
           ws_available_hours: row.ws_available_hours,
         }));
-        setWeeklySummary(mappedWeeklySummary);
+
+        // Sort by current month first, then descending order
+        const sortedWeeklySummary = mappedWeeklySummary.sort((a: any, b: any) => {
+          const currentDate = new Date();
+          const currentMonth = currentDate.getMonth();
+          const currentYear = currentDate.getFullYear();
+          
+          const dateA = new Date(a.week_start_date);
+          const dateB = new Date(b.week_start_date);
+          
+          const monthA = dateA.getMonth();
+          const monthB = dateB.getMonth();
+          const yearA = dateA.getFullYear();
+          const yearB = dateB.getFullYear();
+          
+          // Check if both dates are in current month and year
+          const isCurrentMonthA = monthA === currentMonth && yearA === currentYear;
+          const isCurrentMonthB = monthB === currentMonth && yearB === currentYear;
+          
+          // Current month data should come first
+          if (isCurrentMonthA && !isCurrentMonthB) return -1;
+          if (!isCurrentMonthA && isCurrentMonthB) return 1;
+          
+          // If both are current month or both are not, sort by date descending
+          return dateB.getTime() - dateA.getTime();
+        });
+        
+        setWeeklySummary(sortedWeeklySummary);
 
         // Map weekStats to expected weeklyStats fields
         const stats = weeklyData.weekStats;
@@ -155,12 +218,28 @@ const EmsPerformance: React.FC<EmsPerformanceProps> = () => {
         setError(err.message || 'Failed to load data');
         setLoading(false);
       });
-  }, [API_BASE_URL]);
+  };
 
    const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
     const options: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'long' };
     return date.toLocaleDateString(undefined, options);
+  };
+
+  // Map status values to display text
+  const getStatusDisplay = (status: string): string => {
+    switch (status?.toUpperCase()) {
+      case 'I':
+        return 'In-Progress';
+      case 'U':
+        return 'Yet-to-Start';
+      case 'C':
+        return 'Completed';
+      case 'S':
+        return 'Reviewed';
+      default:
+        return status || 'Unknown';
+    }
   };
 
   const handleWeeklyUpdateClick = async (row: WeeklySummary) => {
@@ -208,7 +287,14 @@ const EmsPerformance: React.FC<EmsPerformanceProps> = () => {
           <button
             className="bg-blue-900 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-semibold shadow"
             style={{ minWidth: '160px' }}
-            onClick={() => setRolesPopOpen(true)}
+            onClick={() => {
+              // Use the first available employee and week IDs from the data, or defaults
+              if (weeklySummary.length > 0) {
+                setSelectedEmpId(weeklySummary[0].ws_emp_id);
+                setSelectedWeekId(weeklySummary[0].ws_week_id);
+              }
+              setRolesPopOpen(true);
+            }}
           >
             Edit Weekly Data
           </button>
@@ -267,7 +353,7 @@ const EmsPerformance: React.FC<EmsPerformanceProps> = () => {
                   <td className=" px-4 py-2">{row.weekly_challenges || '–'}</td>
                   <td className=" px-4 py-2">{row.weekly_unfinished_tasks || '–'}</td>
                   <td className=" px-4 py-2">{row.weekly_next_actions || '–'}</td>
-                  <td className=" px-2 py-2">{row.status}</td>
+                  <td className=" px-2 py-2">{getStatusDisplay(row.status)}</td>
                   {/* <td className=" px-2 py-2">{row.ws_emp_id}</td> */}
                   {/* <td className=" px-2 py-2">{row.ws_emp_code}</td> */}
                   <td className=" px-2 py-2">{row.ws_submitted_on}</td>
@@ -353,7 +439,12 @@ const EmsPerformance: React.FC<EmsPerformanceProps> = () => {
         }}
       />
       {/* RolesPopScreen popup */}
-      <RolesPopScreen isOpen={rolesPopOpen} onClose={() => setRolesPopOpen(false)} />
+      <RolesPopScreen 
+        isOpen={rolesPopOpen} 
+        onClose={() => setRolesPopOpen(false)}
+        empId={selectedEmpId}
+        weekId={selectedWeekId}
+      />
       <ToastContainer />
     </div>
   );

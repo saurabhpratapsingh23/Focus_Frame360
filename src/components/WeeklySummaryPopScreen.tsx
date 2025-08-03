@@ -18,26 +18,82 @@ const topFields = [
   { key: 'ws_week_id', label: 'Week ID' },
   { key: 'ws_start_date', label: 'Start Date' },
   { key: 'ws_end_date', label: 'End Date' },
-  { key: 'ws_workk_days', label: 'Work Days' },
+  { key: 'ws_work_days', label: 'Work Days' },
   { key: 'ws_Holidays', label: 'Holidays'},
   { key: 'ws_WFH', label: 'WFH' },
   { key: 'ws_WFO', label: 'WFO' },
   { key: 'ws_efforts', label: 'Efforts (In hrs)' },
   { key: 'ws_leaves', label: 'Leaves' },
-  
   { key: 'ws_extra_days', label: 'Extra Days' },
 ];
+
+// Status options for dropdown
+const statusOptions = [
+  { value: 'I', label: 'In-Progress' },
+  { value: 'C', label: 'Completed' },
+  { value: 'S', label: 'Reviewed' }
+];
+
+// Convert status code to display value
+const getStatusDisplayValue = (statusCode: string | null | undefined): string => {
+  if (!statusCode) {
+    return 'In-Progress'; // Default value for null/undefined
+  }
+  
+  switch (statusCode.toUpperCase()) {
+    case 'I':
+      return 'In-Progress';
+    case 'C':
+      return 'Completed';
+    case 'S':
+      return 'Reviewed';
+    default:
+      return 'In-Progress'; // Default value
+  }
+};
+
+// Convert display value to status code
+const getStatusCode = (displayValue: string | null | undefined): string => {
+  if (!displayValue) {
+    return 'I'; // Default to In-Progress for null/undefined
+  }
+  
+  switch (displayValue) {
+    case 'In-Progress':
+      return 'I';
+    case 'Completed':
+      return 'C';
+    case 'Reviewed':
+      return 'S';
+    default:
+      return 'I'; // Default to In-Progress
+  }
+};
 
 const WeeklySummaryPopScreen: React.FC<WeeklySummaryPopScreenProps> = ({ isOpen, data, onClose, onSave }) => {
   const [form, setForm] = useState<any>({ ...data });
 
   useEffect(() => {
-    setForm({ ...data });
+    // Only initialize form if data is available
+    if (data && data.ws_status !== undefined) {
+      // Initialize form with data and set status display value
+      const statusDisplayValue = getStatusDisplayValue(data.ws_status);
+      setForm({ 
+        ...data, 
+        ws_status_display: statusDisplayValue 
+      });
+    } else if (data) {
+      // If data exists but no ws_status, set default
+      setForm({ 
+        ...data, 
+        ws_status_display: 'In-Progress' 
+      });
+    }
   }, [data]);
 
   if (!isOpen || !data) return null;
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setForm((prev: typeof form) => ({ ...prev, [name]: value }));
   };
@@ -58,9 +114,9 @@ const WeeklySummaryPopScreen: React.FC<WeeklySummaryPopScreenProps> = ({ isOpen,
         ws_efforts: Number(form.ws_efforts),
         ws_leaves: Number(form.ws_leaves),
         ws_extra_days: Number(form.ws_extra_days),
+        ws_status: getStatusCode(form.ws_status_display), // Convert display value to status code
       };
       onSave(payload);
-
     }
   };
 
@@ -73,7 +129,7 @@ const WeeklySummaryPopScreen: React.FC<WeeklySummaryPopScreenProps> = ({ isOpen,
           {topFields.map(({ key, label }) => (
             <div key={key} className="flex flex-col min-w-[70px]">
               <label className="font-bold mb-1 text-md">{label}</label>
-              {['ws_week_id', 'ws_start_date', 'ws_end_date','ws_workk_days','ws_Holidays' ].includes(key) ? (
+              {['ws_week_id', 'ws_start_date', 'ws_end_date','ws_work_days','ws_Holidays' ].includes(key) ? (
                 <div className="bg-gray-100 px-2 py-2 rounded text-gray-700 w-15 text-sm">{form[key]}</div>
               ) : (
                 <input
@@ -87,6 +143,24 @@ const WeeklySummaryPopScreen: React.FC<WeeklySummaryPopScreenProps> = ({ isOpen,
             </div>
           ))}
         </div>
+        
+        {/* Status Dropdown */}
+        <div className="flex flex-col mb-4">
+          <label className="font-bold mb-1 text-md">Status</label>
+          <select
+            name="ws_status_display"
+            value={form.ws_status_display || 'In-Progress'}
+            onChange={handleChange}
+            className="border rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-48"
+          >
+            {statusOptions.map((option) => (
+              <option key={option.value} value={option.label}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+        </div>
+        
         <form onSubmit={handleSave} className="flex flex-col flex-1 space-y-2">
           {/* Editable fields */}
           {editableFields.map(({ key, label }) => (

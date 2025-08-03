@@ -35,12 +35,12 @@ const EmployeeLogin: React.FC = () => {
       if (result && result.e_active) {
         toast.success('Successfully logged in!');
         // Store user information for use in other components
-        localStorage.setItem('currentUser', JSON.stringify(result));
-        localStorage.setItem('lastLoginTime', new Date().toISOString());
+        sessionStorage.setItem('currentUser', JSON.stringify(result));
+        sessionStorage.setItem('lastLoginTime', new Date().toISOString());
         setTimeout(() => {
           if (rememberMe) {
-            localStorage.setItem('savedUsername', username);
-            localStorage.setItem('savedPassword', password);
+            sessionStorage.setItem('savedUsername', username);
+            sessionStorage.setItem('savedPassword', password);
             toast.success('Credentials saved!');
           }
           navigate('/app/weeklysummary');
@@ -51,6 +51,7 @@ const EmployeeLogin: React.FC = () => {
     } catch (err: any) {
       toast.error(err.message || 'Login failed');
     } finally {
+      setUsername('');
       setPassword(''); // Always clear password after submit
       setLoading(false);
     }

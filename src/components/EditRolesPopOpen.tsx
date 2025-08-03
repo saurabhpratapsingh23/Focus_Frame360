@@ -5,16 +5,16 @@ import React from 'react';
 const EditRolesPopOpen = ({ isOpen, onClose }) => {
   if (!isOpen) return null;
 
-  // Fetch user name from localStorage
+  // Fetch user name from sessionStorage
   let userName = '';
   try {
-    const userStr = localStorage.getItem('currentUser');
+    const userStr = sessionStorage.getItem('currentUser');
     if (userStr) {
       const user = JSON.parse(userStr);
       userName = user.e_fullname || user.name || 'John';
     }
   } catch {
-    console.error('Error parsing user data from localStorage');
+    console.error('Error parsing user data from sessionStorage');
   }
 
   const headingText = userName ? `Functional Role & Responsibility (${userName} is in)` : 'Functional Role & Responsibility';
