@@ -1,5 +1,3 @@
-
-
 import React from 'react';
 
 const EditRolesPopOpen = ({ isOpen, onClose }) => {
@@ -31,8 +29,7 @@ const EditRolesPopOpen = ({ isOpen, onClose }) => {
         </button>
         <div className="max-w-7xl mx-auto space-y-6">
          
-
-         
+        
             <h6 className='text-[25px] text-center font-bold text-white bg-gray-900 px-4 py-2 rounded-t-md rounded-b-md'>Roles Edit Sheet</h6>
             <h5 className="text-lg text-left font-bold text-gray-700 mb-1">{headingText}</h5>
             <div className="flex items-center gap-2 px-2 py-2 mb-2">

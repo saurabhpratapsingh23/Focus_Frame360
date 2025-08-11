@@ -67,71 +67,59 @@ const EmsPerformance: React.FC<EmsPerformanceProps> = () => {
   const [weeklyStats, setWeeklyStats] = useState<WeeklyStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
   const [weeklyPopOpen, setWeeklyPopOpen] = useState(false);
   const [weeklyPopData, setWeeklyPopData] = useState<any>(null);
   const [rolesPopOpen, setRolesPopOpen] = useState(false);
-  const [selectedEmpId, setSelectedEmpId] = useState<number>(13);
-  const [selectedWeekId, setSelectedWeekId] = useState<number>(14);
+  const [selectedEmpId, setSelectedEmpId] = useState<number>(0);
+  const [selectedWeekId, setSelectedWeekId] = useState<number>(0);
+  // For 'Load more' in Weekly Success, Roadblocks, Unfinished Tasks, Next Actions columns
+  type ExpandedFields = 'weekly_success' | 'weekly_challenges' | 'weekly_unfinished_tasks' | 'weekly_next_actions';
+  const [expandedRows, setExpandedRows] = useState<{[rowIdx:number]: {[field in ExpandedFields]?: boolean}}>({});
+
 
   useEffect(() => {
-    // Get emp_id from sessionStorage
-    const empId = sessionStorage.getItem('e_emp_id');
-    console.log('sessionStorage e_emp_id:', empId);
-    console.log('All sessionStorage keys:', Object.keys(sessionStorage));
-    
-    // Debug: Check what's in sessionStorage
-    for (let i = 0; i < sessionStorage.length; i++) {
-      const key = sessionStorage.key(i);
-      if (key) {
-        console.log(`sessionStorage[${key}]:`, sessionStorage.getItem(key));
-      }
-    }
-    
-    if (!empId) {
-      // Try to get emp_id from currentUser as fallback
+    // Get emp_id and emp_code from sessionStorage
+    let empId = sessionStorage.getItem('e_emp_id');
+    let empCode = sessionStorage.getItem('e_emp_code');
+
+    if (!empId || !empCode) {
+      // Try to get from currentUser as fallback
       const userData = sessionStorage.getItem('currentUser');
       if (userData) {
         try {
           const parsedUser = JSON.parse(userData);
-          console.log('Parsed currentUser:', parsedUser);
-          if (parsedUser.e_emp_id) {
-            console.log('Found emp_id in currentUser:', parsedUser.e_emp_id);
-            // Store it in sessionStorage for future use
-            sessionStorage.setItem('e_emp_id', parsedUser.e_emp_id.toString());
-            // Continue with the API calls using the emp_id from currentUser
-            fetchData(parsedUser.e_emp_id.toString());
-            return;
-          } else if (parsedUser.e_emp_code) {
-            // If we have emp_code but no emp_id, try to use a default emp_id
-            console.log('Found emp_code in currentUser:', parsedUser.e_emp_code);
-            // For now, use a default emp_id (you might need to adjust this)
-            const defaultEmpId = '13'; // Default emp_id
-            sessionStorage.setItem('e_emp_id', defaultEmpId);
-            console.log('Using default emp_id:', defaultEmpId);
-            fetchData(defaultEmpId);
+          if (parsedUser.e_emp_id && parsedUser.e_emp_code) {
+            empId = parsedUser.e_emp_id.toString();
+            empCode = parsedUser.e_emp_code;
+            sessionStorage.setItem('e_emp_id', empId);
+            sessionStorage.setItem('e_emp_code', empCode);
+          } else {
+            setError('Employee ID or code not found in user data.');
+            setLoading(false);
             return;
           }
         } catch (e) {
-          console.error('Error parsing currentUser:', e);
+          setError('Error parsing user data.');
+          setLoading(false);
+          return;
         }
+      } else {
+        setError('Employee ID not found. Please login again.');
+        setLoading(false);
+        return;
       }
-      
-      setError('Employee ID not found. Please login again. Check console for debugging info.');
-      setLoading(false);
-      return;
     }
 
-    fetchData(empId);
+    fetchData(empId, empCode);
   }, [API_BASE_URL]);
 
-  const fetchData = (empId: string) => {
+  const fetchData = (empId: string, empCode: string) => {
     setLoading(true);
     setError(null);
 
-    // Fetch employee info and weekly summary/stats in parallel
     Promise.all([
-      fetch(`${API_BASE_URL}/pms/api/e/employee/${empId}`).then(res => {
-        console.log('api response', res);
+      fetch(`${API_BASE_URL}/pms/api/e/employee/${empCode}`).then(res => {
         if (!res.ok) throw new Error(`Employee API error: ${res.status}`);
         return res.json();
       }),
@@ -141,9 +129,8 @@ const EmsPerformance: React.FC<EmsPerformanceProps> = () => {
       })
     ])
       .then(([employeeData, weeklyData]) => {
-        setEmployeeInfo(employeeData.employeeInfo || employeeData); // fallback if not wrapped
+        setEmployeeInfo(employeeData.employeeInfo || employeeData);
 
-        // Map weekSummary to expected weeklySummary fields
         const mappedWeeklySummary = (weeklyData.weekSummary || []).map((row: any) => ({
           week_start_date: row.ws_start_date,
           week_end_date: row.ws_end_date,
@@ -173,40 +160,33 @@ const EmsPerformance: React.FC<EmsPerformanceProps> = () => {
           const currentDate = new Date();
           const currentMonth = currentDate.getMonth();
           const currentYear = currentDate.getFullYear();
-          
           const dateA = new Date(a.week_start_date);
           const dateB = new Date(b.week_start_date);
-          
           const monthA = dateA.getMonth();
           const monthB = dateB.getMonth();
           const yearA = dateA.getFullYear();
           const yearB = dateB.getFullYear();
-          
-          // Check if both dates are in current month and year
           const isCurrentMonthA = monthA === currentMonth && yearA === currentYear;
           const isCurrentMonthB = monthB === currentMonth && yearB === currentYear;
-          
-          // Current month data should come first
           if (isCurrentMonthA && !isCurrentMonthB) return -1;
           if (!isCurrentMonthA && isCurrentMonthB) return 1;
-          
-          // If both are current month or both are not, sort by date descending
           return dateB.getTime() - dateA.getTime();
         });
-        
         setWeeklySummary(sortedWeeklySummary);
 
-        // Map weekStats to expected weeklyStats fields
         const stats = weeklyData.weekStats;
         if (stats) {
+          const expectedHours = stats.ws_stats_hours_available;
+          const extraHours = stats.ws_stats_extra_hours_worked;
+          const extraPercent = expectedHours > 0 ? (extraHours / expectedHours) * 100 : 0;
           setWeeklyStats({
             Officialworkingdays: stats.ws_stats_week_days,
             Officialholidays: stats.ws_stats_holidays,
             LeavesTaken: stats.ws_stats_leaves_taken,
-            ExpectedProductiveHours: stats.ws_stats_hours_available,
+            ExpectedProductiveHours: expectedHours,
             TotalHoursWorked: stats.ws_stats_hours_logged,
-            ExtraHoursWorked: stats.ws_stats_extra_hours_worked,
-            ExtraHoursPercentage: stats.ws_stats_extra_hours_percentage,
+            ExtraHoursWorked: extraHours,
+            ExtraHoursPercentage: extraPercent,
           });
         } else {
           setWeeklyStats(null);
@@ -214,7 +194,6 @@ const EmsPerformance: React.FC<EmsPerformanceProps> = () => {
         setLoading(false);
       })
       .catch((err) => {
-        console.error('Failed to load data:', err);
         setError(err.message || 'Failed to load data');
         setLoading(false);
       });
@@ -311,67 +290,102 @@ const EmsPerformance: React.FC<EmsPerformanceProps> = () => {
       {/* Weekly Performance Summary */}
       <div className="bg-white p-4 rounded-2xl max-w-8xl mx-auto mt-4 shadow-md">
         <div className="overflow-x-auto">
+          <h2 className='text-[25px] text-center  px-2  py-2 text-white font-bold mb-4 bg-gray-900 rounded-t-xl'>Weekly Performance Summary
+            
+          </h2>
           <table className="min-w-full text-sm mb-4  text-left   ">
-            <thead className="bg-gray-200 text-gray-800 font-medium  ">
+            <thead className="bg-blue-100 text-gray-800 font-medium  ">
               <tr>
-                <th className=" rounded-tl-lg px-6 py-2">Week</th>
-                <th className=" px-4 py-2">Weekly Success</th>
-                <th className=" px-2 py-2">WD</th>
-                <th className=" px-2 py-2">WFH</th>
-                <th className=" px-2 py-2">WFO</th>
-                <th className=" px-2 py-2">Efforts</th>
-                <th className=" px-2 py-2">Leaves</th>
-                <th className=" px-2 py-2">Holidays</th>
-                <th className=" px-2 py-2">ED</th>
-                <th className=" px-4 py-2">Roadblocks</th>
-                <th className=" px-4 py-2">Unfinished Tasks</th>
-                <th className=" px-4 py-2">Next Actions</th>
-                <th className=" px-2 py-2">Remarks</th>
+                <th className=" rounded-tl-lg px-6 py-2">Week start</th>
+                <th className="border border-gray-200 px-4 py-2">Week End</th> 
+                <th className="border border-gray-200 w-[20px] px-4 py-2">Weekly Success</th>
+                <th className="border border-gray-200 px-2 py-2">WD</th>
+                <th className="border border-gray-200 px-2 py-2">WFH</th>
+                <th className="border border-gray-200 px-2 py-2">WFO</th>
+                <th className="border border-gray-200 px-2 py-2">Efforts</th>
+                <th className="border border-gray-200 px-2 py-2">Leaves</th>
+                <th className="border border-gray-200 px-2 py-2">Holidays</th>
+                <th className="border border-gray-200 px-2 py-2">WOH</th>
+                <th className="border border-gray-200 px-4 py-2">Roadblocks</th>
+                <th className="border border-gray-200 px-4 py-2">Unfinished Tasks</th>
+                <th className="border border-gray-200 px-4 py-2">Next Actions</th>
+                <th className="border border-gray-200 px-2 py-2">Remarks</th>
                 {/* <th className="border border-gray-200 px-2 py-2">Emp ID</th> */}
                 {/* <th className="border border-gray-200 px-2 py-2">Emp Code</th> */}
-                <th className=" px-2 py-2">Submitted On</th>
-                <th className=" px-2 py-2">Week Number</th>
+                <th className="border border-gray-200 px-2 py-2">Submitted On</th>
+                <th className="border border-gray-200 px-2 py-2">Week Number</th>
                 {/* <th className="border border-gray-200 px-2 py-2">Co ID</th> */}
                 {/* <th className="border border-gray-200 px-2 py-2">Week ID</th> */}
-                <th className=" px-2 py-2">Available Hours</th>
+                <th className="border border-gray-200 px-2 py-2">Available Hours</th>
                 <th className="rounded-tr-lg px-2 py-2">Update Summary</th>
 
               </tr>
             </thead>
             <tbody className="text-gray-700 border border-gray-200">
-              {weeklySummary.map((row, i) => (
-                <tr key={i} className={i%2===1? "bg-gray-200":""}>
-                  <td className=" px-4 py-2">{formatDate(row.week_start_date)} – {formatDate(row.week_end_date)}</td>
-                  <td className=" px-4 py-2">{row.weekly_success}</td>
-                  <td className=" px-2 py-2 text-center">{row.work_days}</td>
-                  <td className=" px-2 py-2 text-center">{row.WFH}</td>
-                  <td className=" px-2 py-2 text-center">{row.WFO}</td>
-                  <td className=" px-2 py-2 text-center">{row.Efforts}</td>
-                  <td className=" px-2 py-2 text-center">{row.Leaves}</td>
-                  <td className=" px-2 py-2 text-center">{row.Holidays}</td>
-                  <td className=" px-2 py-2 text-center">{row.extra_days}</td>
-                  <td className=" px-4 py-2">{row.weekly_challenges || '–'}</td>
-                  <td className=" px-4 py-2">{row.weekly_unfinished_tasks || '–'}</td>
-                  <td className=" px-4 py-2">{row.weekly_next_actions || '–'}</td>
-                  <td className=" px-2 py-2">{getStatusDisplay(row.status)}</td>
-                  {/* <td className=" px-2 py-2">{row.ws_emp_id}</td> */}
-                  {/* <td className=" px-2 py-2">{row.ws_emp_code}</td> */}
-                  <td className=" px-2 py-2">{row.ws_submitted_on}</td>
-                  <td className=" px-2 py-2">{row.ws_week_number}</td>
-                  {/* <td className=" px-2 py-2">{row.ws_co_id}</td> */}
-                  {/* <td className=" px-2 py-2">{row.ws_week_id}</td> */}
-                  <td className=" px-2 py-2">{row.ws_available_hours}</td>
-                  <td className="px-2 py-2">
-                    <button
-                      className="bg-blue-900 hover:bg-blue-700 text-white px-3 py-1 text-sm rounded-md"
-                      onClick={() => handleWeeklyUpdateClick(row)}
-                    >
-                      Edit
-                    </button>
-                  </td>
-
-                </tr>
-              ))}
+              {weeklySummary.map((row, i) => {
+                // Helper for each field
+                const renderExpandableCell = (field: ExpandedFields, value: string | undefined, className = "") => {
+                  const lines = value ? value.split(/\r?\n/) : [];
+                  const isExpanded = expandedRows[i]?.[field] || false;
+                  const handleToggle = () => setExpandedRows(prev => ({
+                    ...prev,
+                    [i]: { ...prev[i], [field]: !isExpanded }
+                  }));
+                  if (lines.length > 10) { 
+                    return (
+                      <div className={className}>
+                        {isExpanded ? lines.join('\n') : lines.slice(0, 10).join('\n')}
+                        <span className="block text-blue-600 cursor-pointer mt-2 underline" onClick={handleToggle}>
+                          {isExpanded ? 'Show less' : 'Load more'}
+                        </span>
+                      </div>
+                    );
+                  }
+                  return <div className={className}>{value || '–'}</div>;
+                };
+                return (
+                  <tr key={i} className={i%2===1? "bg-gray-200 w-20":""}>
+                    <td className=" px-4  py-2 h-20">{formatDate(row.week_start_date)}</td>
+                    <td className="border border-gray-300 w-24 px-4 py-2">{formatDate(row.week_end_date)}</td>
+                    <td className="border border-gray-300 min-w-[300px] max-w-[500px] px-2 py-2 text-[13px] whitespace-pre-line align-top">
+                      {renderExpandableCell('weekly_success', row.weekly_success)}
+                    </td>
+                    <td className="border border-gray-300 text-[13px] px-2 py-2 text-center">{row.work_days}</td>
+                    <td className="border border-gray-300 text-[13px] px-2 py-2 text-center">{row.WFH}</td>
+                    <td className="border border-gray-300 text-[13px] px-2 py-2 text-center">{row.WFO}</td>
+                    <td className="border border-gray-300 text-[13px] px-2 py-2 text-center font-bold">{row.Efforts}</td>
+                    <td className="border border-gray-300 text-[13px] px-2 py-2 text-center">{row.Leaves}</td>
+                    <td className="border border-gray-300 text-[13px] px-2 py-2 text-center">{row.Holidays}</td>
+                    <td className="border border-gray-300 text-[13px] px-2 py-2 text-center ">{row.extra_days}</td>
+                    <td className="border border-gray-300 px-4 py-2 w-15 text-red-600 text-[13px] whitespace-pre-line">
+                      {renderExpandableCell('weekly_challenges', row.weekly_challenges)}
+                    </td>
+                    <td className="border border-gray-300 px-4 py-2 text-[13px] whitespace-pre-line">
+                      {renderExpandableCell('weekly_unfinished_tasks', row.weekly_unfinished_tasks)}
+                    </td>
+                    <td className="border border-gray-300 px-4 py-2 text-[13px] whitespace-pre-line">
+                      {renderExpandableCell('weekly_next_actions', row.weekly_next_actions)}
+                    </td>
+                    <td className="border border-gray-300 w-25 text-center">
+                      <span className='bg-gray-700 text-white text-[13px] rounded-full px-2 py-2 opacity-75 mr-2'>{getStatusDisplay(row.status)}</span></td>
+                    {/* <td className=" px-2 py-2">{row.ws_emp_id}</td> */}
+                    {/* <td className=" px-2 py-2">{row.ws_emp_code}</td> */}
+                    <td className="border border-gray-300 px-2 py-2">{row.ws_submitted_on}</td>
+                    <td className="border border-gray-300 px-2 py-2">{row.ws_week_number}</td>
+                    {/* <td className=" px-2 py-2">{row.ws_co_id}</td> */}
+                    {/* <td className=" px-2 py-2">{row.ws_week_id}</td> */}
+                    <td className="border border-gray-300 px-2 py-2">{row.ws_available_hours}</td>
+                    <td className="px-2 py-2">
+                      <button
+                        className="bg-blue-900 hover:bg-blue-700 text-white px-3 py-1 text-sm rounded-md"
+                        onClick={() => handleWeeklyUpdateClick(row)}
+                      >
+                        Edit
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
@@ -383,12 +397,13 @@ const EmsPerformance: React.FC<EmsPerformanceProps> = () => {
                 <p className="mb-2"><span className="font-semibold text-gray-900">Official Working Days:</span> {weeklyStats.Officialworkingdays} days</p>
                 <p className="mb-2"><span className="font-semibold text-gray-900">Official Holidays:</span> {weeklyStats.Officialholidays} day(s)</p>
                 <p className="mb-2"><span className="font-semibold text-gray-900">Leaves Taken:</span> {weeklyStats.LeavesTaken} day(s)</p>
-                <p><span className="font-semibold text-gray-900">Expected Productive Hours (9hr/day):</span> {weeklyStats.ExpectedProductiveHours} hrs</p>
+                
               </div>
               <div className="bg-blue-50 border-l-4 border-blue-900 p-4 rounded-md flex-1 min-w-[300px] shadow-inner">
-                <p className="mb-2"><span className="font-semibold text-gray-900">Total Hours Worked:</span> {weeklyStats.TotalHoursWorked} hrs</p>
-                <p className="mb-2"><span className="font-semibold text-gray-900">Extra Hours:</span> {weeklyStats.ExtraHoursWorked} hrs</p>
-                <p><span className="font-semibold text-gray-900">Extra Hours %:</span> {weeklyStats.ExtraHoursPercentage?.toFixed(2)}%</p>
+                <p><span className="font-semibold text-gray-900">Expected Productive Hours :</span> {weeklyStats.ExpectedProductiveHours} hrs</p>
+                <p className="mb-2"><span className="font-semibold text-gray-900">Efforts For Completion:</span> {weeklyStats.TotalHoursWorked} hrs</p>
+                {/* <p className="mb-2"><span className="font-semibold text-gray-900">Extra Hours:</span> {weeklyStats.ExtraHoursWorked} hrs</p> */}
+                {/* <p><span className="font-semibold text-gray-900">Extra Hours %:</span> {weeklyStats.ExtraHoursPercentage?.toFixed(2)}%</p> */}
               </div>
             </>
           ) : (
@@ -396,7 +411,7 @@ const EmsPerformance: React.FC<EmsPerformanceProps> = () => {
           )}
         </div>
          <div className="bg-white rounded-md mt-4 shadow p-4 text-xs text-gray-600">
-           <strong className="ml-2">WD</strong> = Working Days,  <strong className="ml-2">H</strong> = Holidays,  <strong className="ml-2">L</strong> = Leaves,  <strong className="ml-2">WFH</strong> = Working from Home,  <strong className="ml-2">WFO</strong> = Working from Office,  <strong className="ml-2">ED</strong> = Extra day(s);
+           <strong className="ml-2">WD</strong> = Working Days,  <strong className="ml-2">H</strong> = Holidays,  <strong className="ml-2">L</strong> = Leaves,  <strong className="ml-2">WFH</strong> = Working from Home,  <strong className="ml-2">WFO</strong> = Working from Office,  <strong className="ml-2">WOH</strong> = Work On Holiday(s);
          
         </div>
 
@@ -424,7 +439,7 @@ const EmsPerformance: React.FC<EmsPerformanceProps> = () => {
               try {
                 errorText = await res.text();
                 console.error('Backend error response:', errorText);
-              } catch (e) {
+              } catch {
                 console.error('Failed to read backend error response');
               }
               throw new Error('Failed to save weekly summary row');
@@ -433,8 +448,12 @@ const EmsPerformance: React.FC<EmsPerformanceProps> = () => {
             setWeeklyPopOpen(false);
             // Refresh the table by re-fetching data
             // fetchWeeklySummary();
-          } catch (err: any) {
-            toast.error(err.message || 'Save failed');
+          } catch (err: unknown) {
+            if (err instanceof Error) {
+              toast.error(err.message || 'Save failed');
+            } else {
+              toast.error('Save failed');
+            }
           }
         }}
       />

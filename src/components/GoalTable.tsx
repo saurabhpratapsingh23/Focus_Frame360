@@ -61,7 +61,12 @@ const GoalTable: React.FC = () => {
   const [displayedGoals, setDisplayedGoals] = useState<Goal[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
-  const itemsPerPage = 15;
+  const itemsPerPage = 20;
+  // Filter and sort states
+  const [filterWeek, setFilterWeek] = useState<string>('');
+  const [filterGoalId, setFilterGoalId] = useState<string>('');
+  const [sortByWeek, setSortByWeek] = useState<'asc' | 'desc'>('asc');
+  const [sortByGoalId, setSortByGoalId] = useState<'asc' | 'desc'>('asc');
 
   useEffect(() => {
     // Get emp_id from sessionStorage
@@ -71,7 +76,6 @@ const GoalTable: React.FC = () => {
       setLoading(false);
       return;
     }
-    
     const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
     setLoading(true);
     setError(null);
@@ -82,42 +86,25 @@ const GoalTable: React.FC = () => {
       })
       .then(data => {
         const goalsData = data.goals || [];
-        
         // Sort by current month first, then descending order
         const sortedGoals = goalsData.sort((a: any, b: any) => {
           const currentDate = new Date();
           const currentMonth = currentDate.getMonth();
           const currentYear = currentDate.getFullYear();
-          
           const dateA = new Date(a.goal_week_start_date);
           const dateB = new Date(b.goal_week_start_date);
-          
           const monthA = dateA.getMonth();
           const monthB = dateB.getMonth();
           const yearA = dateA.getFullYear();
           const yearB = dateB.getFullYear();
-          
-          // Check if both dates are in current month and year
           const isCurrentMonthA = monthA === currentMonth && yearA === currentYear;
           const isCurrentMonthB = monthB === currentMonth && yearB === currentYear;
-          
-          // Current month data should come first
           if (isCurrentMonthA && !isCurrentMonthB) return -1;
           if (!isCurrentMonthA && isCurrentMonthB) return 1;
-          
-          // If both are current month or both are not, sort by date descending
           return dateB.getTime() - dateA.getTime();
         });
-        
         setGoals(sortedGoals);
         setGoalsSummary(data.goalsSummary || []);
-        
-        // Initialize pagination
-        const initialDisplay = sortedGoals.slice(0, itemsPerPage);
-        setDisplayedGoals(initialDisplay);
-        setHasMore(sortedGoals.length > itemsPerPage);
-        setCurrentPage(1);
-        
         setLoading(false);
       })
       .catch(err => {
@@ -125,6 +112,28 @@ const GoalTable: React.FC = () => {
         setLoading(false);
       });
   }, []);
+
+  // Filter, sort, and paginate displayedGoals
+  useEffect(() => {
+    let filtered = goals;
+    if (filterWeek) {
+      filtered = filtered.filter(g => g.goal_week_number.toString() === filterWeek);
+    }
+    if (filterGoalId) {
+      filtered = filtered.filter(g => g.goal_id.trim().toLowerCase().includes(filterGoalId.trim().toLowerCase()));
+    }
+    // Sort by goal_id alphabetically, regardless of week
+    filtered = [...filtered].sort((a, b) => {
+      const aId = a.goal_id.trim().toUpperCase();
+      const bId = b.goal_id.trim().toUpperCase();
+      return sortByGoalId === 'asc'
+        ? aId.localeCompare(bId)
+        : bId.localeCompare(aId);
+    });
+    const initialDisplay = filtered.slice(0, itemsPerPage * currentPage);
+    setDisplayedGoals(initialDisplay);
+    setHasMore(filtered.length > initialDisplay.length);
+  }, [goals, filterWeek, filterGoalId, sortByWeek, sortByGoalId, currentPage]);
 
   if (loading) return <div className="p-4 text-center">Loading goals...</div>;
   if (error) return <div className="p-4 text-center text-red-500">{error}</div>;
@@ -317,7 +326,64 @@ const GoalTable: React.FC = () => {
     <div className="space-y-8">
       {/* Table 1: Goals */}
       <div>
-        <h2 className="text-[25px] text-center  px-2  py-2 text-white font-bold mb-4 bg-gray-900 rounded-t-xl">Goals (Weekly Details)</h2>
+        <div className="mb-2">
+          <h2 className="flex justify-between items-center text-[25px] px-2 py-2 text-white font-bold mb-4 bg-gray-900 rounded-t-xl">
+            <span className="content-center flex-shrink-0">Goals (Weekly Details)</span>
+            <div className="flex gap-2 flex-wrap items-end">
+              <div className="flex flex-col gap-1">
+                <label className="text-xs font-semibold">Week</label>
+                <select
+                  className="border rounded px-1 py-0.5 text-xs bg-white text-gray-900"
+                  value={filterWeek}
+                  onChange={e => {
+                    setCurrentPage(1);
+                    setFilterWeek(e.target.value);
+                  }}
+                >
+                  <option value="">All</option>
+                  {[...new Set(goals.map(g => g.goal_week_number))].sort((a, b) => a - b).map(week => (
+                    <option key={week} value={week}>{week}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="flex flex-col gap-1">
+                <label className="text-xs font-semibold">Goal ID</label>
+                <input
+                  className="border rounded px-1 py-0.5 text-xs bg-white text-gray-900"
+                  type="text"
+                  placeholder="Search"
+                  value={filterGoalId}
+                  onChange={e => {
+                    setCurrentPage(1);
+                    setFilterGoalId(e.target.value);
+                  }}
+                />
+              </div>
+              {/* <div className="flex flex-col gap-1">
+                <label className="text-xs font-semibold">Sort Week</label>
+                <select
+                  className="border rounded px-1 py-0.5 text-xs bg-white text-gray-900"
+                  value={sortByWeek}
+                  onChange={e => setSortByWeek(e.target.value as 'asc' | 'desc')}
+                >
+                  <option value="asc">Asc</option>
+                  <option value="desc">Desc</option>
+                </select>
+              </div> */}
+              <div className="flex flex-col gap-1">
+                <label className="text-xs font-semibold">Sort ID</label>
+                <select
+                  className="border rounded px-1 py-0.5 text-xs bg-white text-gray-900"
+                  value={sortByGoalId}
+                  onChange={e => setSortByGoalId(e.target.value as 'asc' | 'desc')}
+                >
+                  <option value="asc">Asc</option>
+                  <option value="desc">Desc</option>
+                </select>
+              </div>
+            </div>
+          </h2>
+        </div>
         <div className="overflow-x-auto">
           <table className="min-w-full text-sm ">
             <thead className="bg-blue-100 text-[95%] ">
@@ -347,8 +413,8 @@ const GoalTable: React.FC = () => {
                   <td className="border border-gray-300  px-2 py-1 text-center">{g.goal_week_number}</td>
                   <td className="border border-gray-300 px-2 py-1">{g.goal_week_start_date}</td>
                   <td className="border border-gray-300 px-2 py-1">{g.goal_week_end_date}</td>
-                  <td className="border border-gray-300 px-2 py-1 w-28 font-bold">{g.goal_id.trim()}</td>
-                  <td className="border border-gray-300 px-2 py-1">{g.goal_title}</td>
+                  <td className="border border-gray-300 px-2 py-1 w-30 ">{g.goal_id.trim()}</td>
+                  <td className="border border-gray-300 px-2 py-1 font-bold">{g.goal_title}</td>
                   <td className="border border-gray-300 px-2 py-1 whitespace-pre-line">{g.goal_description}</td>
                   <td className="border border-gray-300 px-2 py-1 text-center">{g.goal_target}</td>
                   <td className="border border-gray-300 px-2 py-1 whitespace-pre-line">{g.goal_action_performed}</td>
@@ -432,7 +498,7 @@ const GoalTable: React.FC = () => {
                   <td className=" px-2 py-2 font-bold">{summary.goal_es_title}</td>
                   <td className=" px-2 py-2 whitespace-pre-line">{summary.goal_es_description}</td>
                   <td className=" px-2 py-2 text-center">{summary.goal_es_effort}</td>
-                  <td className=" px-2 py-2 text-center">{summary.goal_es_efforts_percentage}</td>
+                  <td className=" px-2 py-2 text-center">{summary.goal_es_efforts_percentage + "%"}</td>
                   {/* <td className="px-2 py-2">
                     <button className="bg-blue-900 hover:bg-blue-700 text-white px-3 py-1 text-sm rounded-md" onClick={() => handleUpdateClick(summary as any)}>Update</button>
                   </td> */}

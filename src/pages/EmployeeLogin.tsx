@@ -39,11 +39,11 @@ const EmployeeLogin: React.FC = () => {
         sessionStorage.setItem('lastLoginTime', new Date().toISOString());
         setTimeout(() => {
           if (rememberMe) {
-            sessionStorage.setItem('savedUsername', username);
-            sessionStorage.setItem('savedPassword', password);
+            // sessionStorage.setItem('savedUsername', username);
+            // sessionStorage.setItem('savedPassword', password);
             toast.success('Credentials saved!');
           }
-          navigate('/app/weeklysummary');
+          navigate('/app/performance');
         }, 500);
       } else {
         toast.error('Invalid username or password');

@@ -170,12 +170,16 @@ const PopScreen: React.FC<PopScreenProps> = ({ isOpen, goal, onClose, onSubmit }
             ) {
               return null;
             }
+            // Always render editableFields, even if not present in goal object
             const editable = editableFields.find((f) => f.key === key);
-            return (
-              <div key={key}>
-                {renderField(key, editable ? editable.label : key.replace(/_/g, " "))}
-              </div>
-            );
+            if (editable || goal[key] !== undefined) {
+              return (
+                <div key={key}>
+                  {renderField(key, editable ? editable.label : key.replace(/_/g, " "))}
+                </div>
+              );
+            }
+            return null;
           })}
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

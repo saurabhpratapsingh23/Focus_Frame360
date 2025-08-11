@@ -153,12 +153,12 @@ class ApiService {
   // Fetch week listing data
   async getWeekListing(empId: number): Promise<WeekListingResponse[]> {
     try {
-      console.log(`Fetching week listing data for empId: ${empId}`);
-      console.log(`API URL: ${this.baseURL}/e/weeklisting/${empId}`);
+      // console.log(`Fetching week listing data for empId: ${empId}`);
+      // console.log(`API URL: ${this.baseURL}/e/weeklisting/${empId}`);
       const response = await this.axiosInstance.get<WeekListingResponse[]>(
         `${this.baseURL}/e/weeklisting/${empId}`
       );
-      console.log('Week Listing API Response:', response.data);
+      // console.log('Week Listing API Response:', response.data);
       return response.data;
     } catch (error: any) {
       console.error('Error fetching week listing data:', error);
@@ -188,13 +188,13 @@ class ApiService {
   // Get WS Row data
   async getWsRow(requestData: GetWsRowRequest): Promise<GetWsRowResponse> {
     try {
-      console.log('Calling getwsrow API with data:', requestData);
-      console.log(`API URL: ${this.baseURL}/e/getwsrow`);
+      // console.log('Calling getwsrow API with data:', requestData);
+      // console.log(`API URL: ${this.baseURL}/e/getwsrow`);
       const response = await this.axiosInstance.post<GetWsRowResponse>(
         `${this.baseURL}/e/getwsrow`,
         requestData
       );
-      console.log('Get WS Row API Response:', response.data);
+      // console.log('Get WS Row API Response:', response.data);
       return response.data;
     } catch (error: any) {
       console.error('Error calling getwsrow API:', error);
@@ -284,8 +284,8 @@ class ApiService {
   // Test API connectivity
   async testConnection(): Promise<boolean> {
     try {
-      console.log('Testing API connection...');
-      console.log(`Base URL: ${this.baseURL}`);
+      // console.log('Testing API connection...');
+      // console.log(`Base URL: ${this.baseURL}`);
       const response = await this.axiosInstance.get(`${this.baseURL}/health`);
       console.log('API connection successful:', response.status);
       return true;

@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
-// import { mockUsers } from '../lib/mockAPIData';
 
-interface User {
+export interface User {
   e_emp_code: string;
   e_fullname: string;
   e_work_location: string;
@@ -26,21 +25,46 @@ const Header: React.FC = () => {
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   useEffect(() => {
-    // Get user information from sessionStorage
-    const userData = sessionStorage.getItem('currentUser');
-    const loginTime = sessionStorage.getItem('lastLoginTime');
-    // Removed mockUsers and savedUsername fallback logic
-    if (userData) {
-      try {
-        const parsedUser = JSON.parse(userData);
-        setUser(parsedUser);
-      } catch (error) {
-        console.error('Error parsing user data from sessionStorage:', error);
-        // Clear invalid data
-        sessionStorage.removeItem('currentUser');
+    // Listen for changes to empCode in sessionStorage
+    const fetchEmployeeInfo = () => {
+      const empCode = sessionStorage.getItem('e_emp_code');
+      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+      if (empCode) {
+        fetch(`${API_BASE_URL}/pms/api/e/employee/${empCode}`)
+          .then(res => {
+            if (!res.ok) throw new Error(`Employee API error: ${res.status}`);
+            return res.json();
+          })
+          .then(data => {
+            setUser(data.employeeInfo || data);
+          })
+          .catch(error => {
+            console.error('Error fetching employee info:', error);
+            setUser(null);
+          });
+      } else {
         setUser(null);
       }
-    }
+    };
+
+    // Initial fetch
+    fetchEmployeeInfo();
+
+    // Listen for storage changes (cross-tab)
+    const handleStorage = (e: StorageEvent) => {
+      if (e.key === 'e_emp_code') {
+        fetchEmployeeInfo();
+      }
+    };
+    window.addEventListener('storage', handleStorage);
+
+    // Listen for navigation or login (same tab)
+    const interval = setInterval(() => {
+      fetchEmployeeInfo();
+    }, 1000); // Poll every second for sessionStorage changes
+
+    // Login time logic
+    const loginTime = sessionStorage.getItem('lastLoginTime');
     if (loginTime) {
       try {
         const date = new Date(loginTime);
@@ -53,10 +77,14 @@ const Header: React.FC = () => {
         setLoginDate('');
       }
     } else {
-      // Set login date as today if no login time is stored
       const today = new Date();
       setLoginDate(today.toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' }));
     }
+
+    return () => {
+      window.removeEventListener('storage', handleStorage);
+      clearInterval(interval);
+    };
   }, []);
 
   const handleRefresh = () => {
@@ -111,6 +139,8 @@ const Header: React.FC = () => {
             sessionStorage.removeItem('lastLoginTime');
             sessionStorage.removeItem('savedUsername');
             sessionStorage.removeItem('savedPassword');
+            sessionStorage.removeItem('e_emp_code');
+            sessionStorage.removeItem('e_emp_id');
             window.location.href = '/';
           }}
         >

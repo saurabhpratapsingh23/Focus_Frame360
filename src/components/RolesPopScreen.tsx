@@ -63,11 +63,11 @@ const RolesPopScreen: React.FC<RolesPopScreenProps> = ({
         week_id: row.week_id
       };
       
-      console.log('Calling getwsrow API with data:', requestData);
+      // console.log('Calling getwsrow API with data:', requestData);
       
       // Call the getwsrow API
       const response = await apiService.getWsRow(requestData);
-      console.log('Get WS Row API Response:', response);
+      // console.log('Get WS Row API Response:', response);
       
       // Open WeeklySummaryPopScreen with the data
       setWeeklySummaryData(response);
@@ -153,11 +153,32 @@ const RolesPopScreen: React.FC<RolesPopScreenProps> = ({
   };
 
   // Handle WeeklySummaryPopScreen save
-  const handleWeeklySummarySave = (payload: any) => {
-    console.log('Weekly Summary Save Payload:', payload);
-    // TODO: Implement save functionality
-    toast.info('Save functionality will be implemented later.');
-    handleWeeklySummaryClose();
+  const handleWeeklySummarySave = async (payload: any) => {
+    // Save weekly summary row to backend
+    try {
+      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+      const res = await fetch(`${API_BASE_URL}/pms/api/e/postwsrow`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) {
+        let errorText = '';
+        try {
+          errorText = await res.text();
+          console.error('Backend error response:', errorText);
+        } catch (e) {
+          console.error('Failed to read backend error response');
+        }
+        throw new Error('Failed to save weekly summary row');
+      }
+      toast.success('Weekly summary row saved successfully!');
+      handleWeeklySummaryClose();
+      // Optionally refresh week listing data
+      fetchWeekListingData();
+    } catch (err: any) {
+      toast.error(err.message || 'Save failed');
+    }
   };
 
   // Fetch week listing data when edit button is clicked
@@ -277,7 +298,7 @@ const RolesPopScreen: React.FC<RolesPopScreenProps> = ({
               <tr className="font-bold">
                 {[
                   'Week Start Date', 'Week End Date', 'WD', 'H', 'L',
-                  'WFH', 'WFO', 'ED', 'Efforts (In Hrs)', 'Status', 'Actions'
+                  'WFH', 'WFO', 'WOH', 'Efforts (In Hrs)', 'Status', 'Actions'
                 ].map((th) => (
                   <th key={th} className="p-2 border">{th}</th>
                 ))}

@@ -8,7 +8,7 @@ const Layout: React.FC = () => (
     <Sidebar />
     <div className="flex flex-col flex-1">
       <Header />
-      <div className="p-6 bg-white overflow-y-auto flex-1" id="contentArea">
+      <div className="p-2 bg-white overflow-y-auto flex-1" id="contentArea">
         <Outlet />
       </div>
     </div>

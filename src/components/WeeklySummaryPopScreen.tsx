@@ -24,14 +24,15 @@ const topFields = [
   { key: 'ws_WFO', label: 'WFO' },
   { key: 'ws_efforts', label: 'Efforts (In hrs)' },
   { key: 'ws_leaves', label: 'Leaves' },
-  { key: 'ws_extra_days', label: 'Extra Days' },
+  { key: 'ws_extra_days', label: 'Work On Holidays' },
 ];
 
 // Status options for dropdown
 const statusOptions = [
   { value: 'I', label: 'In-Progress' },
   { value: 'C', label: 'Completed' },
-  { value: 'S', label: 'Reviewed' }
+  { value: 'S', label: 'Reviewed' },
+  { value: 'N', label: 'Not Applicable'}
 ];
 
 // Convert status code to display value
@@ -47,6 +48,8 @@ const getStatusDisplayValue = (statusCode: string | null | undefined): string =>
       return 'Completed';
     case 'S':
       return 'Reviewed';
+    case 'N':
+      return 'Not Applicable';
     default:
       return 'In-Progress'; // Default value
   }
@@ -122,9 +125,10 @@ const WeeklySummaryPopScreen: React.FC<WeeklySummaryPopScreenProps> = ({ isOpen,
 
   return (
     <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center">
-      <div className="relative w-full max-w-6xl mx-auto my-8 bg-white rounded-lg shadow-lg p-6 overflow-y-auto max-h-[80vh] border border-gray-900 flex flex-col">
+      <div className="relative w-full max-w-[1400px] mx-auto my-8 bg-white rounded-lg shadow-lg p-6 overflow-y-auto max-h-[80vh] border border-gray-900 flex flex-col">
         <h2 className="text-xl md:text-2xl font-bold text-center text-white bg-gray-900 px-4 py-3 rounded-t-md shadow">Weekly Summary Details</h2>
         {/* Top fields in a single line */}
+
         <div className="flex flex-wrap mt-2 gap-4 mb-4">
           {topFields.map(({ key, label }) => (
             <div key={key} className="flex flex-col min-w-[70px]">
@@ -142,23 +146,22 @@ const WeeklySummaryPopScreen: React.FC<WeeklySummaryPopScreenProps> = ({ isOpen,
               )}
             </div>
           ))}
-        </div>
-        
-        {/* Status Dropdown */}
-        <div className="flex flex-col mb-4">
-          <label className="font-bold mb-1 text-md">Status</label>
-          <select
-            name="ws_status_display"
-            value={form.ws_status_display || 'In-Progress'}
-            onChange={handleChange}
-            className="border rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-48"
-          >
-            {statusOptions.map((option) => (
-              <option key={option.value} value={option.label}>
-                {option.label}
-              </option>
-            ))}
-          </select>
+          {/* Status Dropdown as a top field */}
+          <div className="flex flex-col min-w-[120px]">
+            <label className="font-bold mb-1 text-md">Status</label>
+            <select
+              name="ws_status_display"
+              value={form.ws_status_display || 'In-Progress'}
+              onChange={handleChange}
+              className="border rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-32 mt-2"
+            >
+              {statusOptions.map((option) => (
+                <option key={option.value} value={option.label}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
         
         <form onSubmit={handleSave} className="flex flex-col flex-1 space-y-2">
