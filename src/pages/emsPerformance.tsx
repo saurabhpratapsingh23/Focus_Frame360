@@ -254,20 +254,19 @@ const EmsPerformance: React.FC<EmsPerformanceProps> = () => {
     }
   };
 
-  if (loading) return <div className="p-8 text-center">Loading...</div>;
-  if (error || !employeeInfo) return <div className="p-8 text-center text-red-500">{error || 'No data found'}</div>;
+  if (loading) return <div className="flex justify-center items-center min-h-[120px] text-gray-600 text-base sm:text-lg">Loading...</div>;
+  if (error || !employeeInfo) return <div className="flex justify-center items-center min-h-[120px] text-red-600 text-base sm:text-lg">{error || 'No data found'}</div>;
 
   return (
-    <div className="bg-gray-100 p-4 text-gray-800">
+    <div className="bg-gray-100 p-2 sm:p-4 text-gray-800 min-h-screen">
       {/* Profile Card */}
-      <div className="bg-white p-4 rounded-2xl max-w-8xl mx-auto shadow-md mb-4">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-2xl font-bold hover:underline">Perfomance Report</h2>
+      <div className="bg-white p-2 sm:p-4 rounded-2xl max-w-8xl mx-auto shadow-md mb-4">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 gap-2">
+          <h2 className="text-lg sm:text-2xl font-bold hover:underline">Performance Report</h2>
           <button
-            className="bg-blue-900 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-semibold shadow"
-            style={{ minWidth: '160px' }}
+            className="bg-blue-900 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-xs sm:text-sm font-semibold shadow"
+            style={{ minWidth: '120px' }}
             onClick={() => {
-              // Use the first available employee and week IDs from the data, or defaults
               if (weeklySummary.length > 0) {
                 setSelectedEmpId(weeklySummary[0].ws_emp_id);
                 setSelectedWeekId(weeklySummary[0].ws_week_id);
@@ -278,26 +277,24 @@ const EmsPerformance: React.FC<EmsPerformanceProps> = () => {
             Edit Weekly Data
           </button>
         </div>
-        <div className="mb-8 space-y-2">
-          <div className=""><span className="w-2/5 font-bold">Employee Code:</span> <span className="ml-2">{employeeInfo.e_emp_code}</span></div>
-          <div className=""><span className="w-2/5 font-bold">Name:</span> <span className="ml-2">{employeeInfo.e_fullname}</span></div>
-          <div className=""><span className="w-2/5 font-bold">Designation:</span> <span className="ml-2">{employeeInfo.e_designation}</span></div>
-          <div className=""><span className="w-2/5 font-bold">Department:</span> <span className="ml-2">{employeeInfo.e_department}</span></div>
-          <div className=""><span className="w-2/5 font-bold">Work Location:</span> <span className="ml-2">{employeeInfo.e_work_location}</span></div>
+        <div className="mb-4 sm:mb-8 space-y-1 sm:space-y-2 text-xs sm:text-base">
+          <div><span className="font-bold">Employee Code:</span> <span className="ml-1">{employeeInfo.e_emp_code}</span></div>
+          <div><span className="font-bold">Name:</span> <span className="ml-1">{employeeInfo.e_fullname}</span></div>
+          <div><span className="font-bold">Designation:</span> <span className="ml-1">{employeeInfo.e_designation}</span></div>
+          <div><span className="font-bold">Department:</span> <span className="ml-1">{employeeInfo.e_department}</span></div>
+          <div><span className="font-bold">Work Location:</span> <span className="ml-1">{employeeInfo.e_work_location}</span></div>
         </div>
       </div>
 
       {/* Weekly Performance Summary */}
-      <div className="bg-white p-4 rounded-2xl max-w-8xl mx-auto mt-4 shadow-md">
+      <div className="bg-white p-2 sm:p-4 rounded-2xl max-w-8xl mx-auto mt-4 shadow-md">
         <div className="overflow-x-auto">
-          <h2 className='text-[25px] text-center  px-2  py-2 text-white font-bold mb-4 bg-gray-900 rounded-t-xl'>Weekly Performance Summary
-            
-          </h2>
-          <table className="min-w-full text-sm mb-4  text-left   ">
-            <thead className="bg-blue-100 text-gray-800 font-medium  ">
+          <h2 className='text-lg sm:text-2xl text-center px-2 py-2 text-white font-bold mb-4 bg-gray-900 rounded-t-xl'>Weekly Performance Summary</h2>
+          <table className="min-w-[900px] w-full text-xs sm:text-sm mb-4 text-left">
+            <thead className="bg-blue-100 text-gray-800 font-medium">
               <tr>
-                <th className=" rounded-tl-lg px-6 py-2">Week start</th>
-                <th className="border border-gray-200 px-4 py-2">Week End</th> 
+                <th className="rounded-tl-lg px-2 sm:px-6 py-2">Week start</th>
+                <th className="border border-gray-200 px-2 sm:px-4 py-2">Week End</th>
                 <th className="border border-gray-200 w-[20px] px-4 py-2">Weekly Success</th>
                 <th className="border border-gray-200 px-2 py-2">WD</th>
                 <th className="border border-gray-200 px-2 py-2">WFH</th>
@@ -345,39 +342,35 @@ const EmsPerformance: React.FC<EmsPerformanceProps> = () => {
                 };
                 return (
                   <tr key={i} className={i%2===1? "bg-gray-200 w-20":""}>
-                    <td className=" px-4  py-2 h-20">{formatDate(row.week_start_date)}</td>
-                    <td className="border border-gray-300 w-24 px-4 py-2">{formatDate(row.week_end_date)}</td>
-                    <td className="border border-gray-300 min-w-[300px] max-w-[500px] px-2 py-2 text-[13px] whitespace-pre-line align-top">
+                    <td className="px-2 sm:px-4 w-24 py-2 h-20">{formatDate(row.week_start_date)}</td>
+                    <td className="border border-gray-300 w-24 px-2 sm:px-4 py-2">{formatDate(row.week_end_date)}</td>
+                    <td className="border border-gray-300 min-w-[200px] sm:min-w-[300px] max-w-[500px] px-2 py-2 text-[11px] sm:text-[13px] whitespace-pre-line align-top">
                       {renderExpandableCell('weekly_success', row.weekly_success)}
                     </td>
-                    <td className="border border-gray-300 text-[13px] px-2 py-2 text-center">{row.work_days}</td>
-                    <td className="border border-gray-300 text-[13px] px-2 py-2 text-center">{row.WFH}</td>
-                    <td className="border border-gray-300 text-[13px] px-2 py-2 text-center">{row.WFO}</td>
-                    <td className="border border-gray-300 text-[13px] px-2 py-2 text-center font-bold">{row.Efforts}</td>
-                    <td className="border border-gray-300 text-[13px] px-2 py-2 text-center">{row.Leaves}</td>
-                    <td className="border border-gray-300 text-[13px] px-2 py-2 text-center">{row.Holidays}</td>
-                    <td className="border border-gray-300 text-[13px] px-2 py-2 text-center ">{row.extra_days}</td>
-                    <td className="border border-gray-300 px-4 py-2 w-15 text-red-600 text-[13px] whitespace-pre-line">
+                    <td className="border border-gray-300 text-[11px] sm:text-[13px] px-2 py-2 text-center">{row.work_days}</td>
+                    <td className="border border-gray-300 text-[11px] sm:text-[13px] px-2 py-2 text-center">{row.WFH}</td>
+                    <td className="border border-gray-300 text-[11px] sm:text-[13px] px-2 py-2 text-center">{row.WFO}</td>
+                    <td className="border border-gray-300 text-[11px] sm:text-[13px] px-2 py-2 text-center font-bold">{row.Efforts}</td>
+                    <td className="border border-gray-300 text-[11px] sm:text-[13px] px-2 py-2 text-center">{row.Leaves}</td>
+                    <td className="border border-gray-300 text-[11px] sm:text-[13px] px-2 py-2 text-center">{row.Holidays}</td>
+                    <td className="border border-gray-300 text-[11px] sm:text-[13px] px-2 py-2 text-center ">{row.extra_days}</td>
+                    <td className="border border-gray-300 px-2 sm:px-4 py-2 w-15 text-red-600 text-[11px] sm:text-[13px] whitespace-pre-line">
                       {renderExpandableCell('weekly_challenges', row.weekly_challenges)}
                     </td>
-                    <td className="border border-gray-300 px-4 py-2 text-[13px] whitespace-pre-line">
+                    <td className="border border-gray-300 px-2 sm:px-4 py-2 text-[11px] sm:text-[13px] whitespace-pre-line">
                       {renderExpandableCell('weekly_unfinished_tasks', row.weekly_unfinished_tasks)}
                     </td>
-                    <td className="border border-gray-300 px-4 py-2 text-[13px] whitespace-pre-line">
+                    <td className="border border-gray-300 px-2 sm:px-4 py-2 text-[11px] sm:text-[13px] whitespace-pre-line">
                       {renderExpandableCell('weekly_next_actions', row.weekly_next_actions)}
                     </td>
                     <td className="border border-gray-300 w-25 text-center">
-                      <span className='bg-gray-700 text-white text-[13px] rounded-full px-2 py-2 opacity-75 mr-2'>{getStatusDisplay(row.status)}</span></td>
-                    {/* <td className=" px-2 py-2">{row.ws_emp_id}</td> */}
-                    {/* <td className=" px-2 py-2">{row.ws_emp_code}</td> */}
+                      <span className='bg-gray-700 text-white text-[11px] sm:text-[13px] rounded-full px-2 py-2 opacity-75 mr-2'>{getStatusDisplay(row.status)}</span></td>
                     <td className="border border-gray-300 px-2 py-2">{row.ws_submitted_on}</td>
                     <td className="border border-gray-300 px-2 py-2">{row.ws_week_number}</td>
-                    {/* <td className=" px-2 py-2">{row.ws_co_id}</td> */}
-                    {/* <td className=" px-2 py-2">{row.ws_week_id}</td> */}
                     <td className="border border-gray-300 px-2 py-2">{row.ws_available_hours}</td>
                     <td className="px-2 py-2">
                       <button
-                        className="bg-blue-900 hover:bg-blue-700 text-white px-3 py-1 text-sm rounded-md"
+                        className="bg-blue-900 hover:bg-blue-700 text-white px-2 sm:px-3 py-1 text-xs sm:text-sm rounded-md"
                         onClick={() => handleWeeklyUpdateClick(row)}
                       >
                         Edit
@@ -390,38 +383,34 @@ const EmsPerformance: React.FC<EmsPerformanceProps> = () => {
           </table>
         </div>
 
-        <div className="flex flex-wrap gap-6">
+        <div className="flex flex-col sm:flex-row flex-wrap gap-4 sm:gap-6">
           {weeklyStats ? (
             <>
-              <div className="bg-blue-50 border-l-4 border-blue-900 p-4 rounded-md flex-1 min-w-[300px] shadow-inner">
+              <div className="bg-blue-50 border-l-4 border-blue-900 p-2 sm:p-4 rounded-md flex-1 min-w-[180px] sm:min-w-[300px] shadow-inner">
                 <p className="mb-2"><span className="font-semibold text-gray-900">Official Working Days:</span> {weeklyStats.Officialworkingdays} days</p>
                 <p className="mb-2"><span className="font-semibold text-gray-900">Official Holidays:</span> {weeklyStats.Officialholidays} day(s)</p>
                 <p className="mb-2"><span className="font-semibold text-gray-900">Leaves Taken:</span> {weeklyStats.LeavesTaken} day(s)</p>
-                
               </div>
-              <div className="bg-blue-50 border-l-4 border-blue-900 p-4 rounded-md flex-1 min-w-[300px] shadow-inner">
+              <div className="bg-blue-50 border-l-4 border-blue-900 p-2 sm:p-4 rounded-md flex-1 min-w-[180px] sm:min-w-[300px] shadow-inner">
                 <p><span className="font-semibold text-gray-900">Expected Productive Hours :</span> {weeklyStats.ExpectedProductiveHours} hrs</p>
                 <p className="mb-2"><span className="font-semibold text-gray-900">Efforts For Completion:</span> {weeklyStats.TotalHoursWorked} hrs</p>
-                {/* <p className="mb-2"><span className="font-semibold text-gray-900">Extra Hours:</span> {weeklyStats.ExtraHoursWorked} hrs</p> */}
-                {/* <p><span className="font-semibold text-gray-900">Extra Hours %:</span> {weeklyStats.ExtraHoursPercentage?.toFixed(2)}%</p> */}
               </div>
             </>
           ) : (
             <div className="min-h-[120px] w-full" />
           )}
         </div>
-         <div className="bg-white rounded-md mt-4 shadow p-4 text-xs text-gray-600">
-           <strong className="ml-2">WD</strong> = Working Days,  <strong className="ml-2">H</strong> = Holidays,  <strong className="ml-2">L</strong> = Leaves,  <strong className="ml-2">WFH</strong> = Working from Home,  <strong className="ml-2">WFO</strong> = Working from Office,  <strong className="ml-2">WOH</strong> = Work On Holiday(s);
-         
+        <div className="bg-white rounded-md mt-4 shadow p-2 sm:p-4 text-xs text-gray-600">
+          <strong className="ml-2">WD</strong> = Working Days,  <strong className="ml-2">H</strong> = Holidays,  <strong className="ml-2">L</strong> = Leaves,  <strong className="ml-2">WFH</strong> = Working from Home,  <strong className="ml-2">WFO</strong> = Working from Office,  <strong className="ml-2">WOH</strong> = Work On Holiday(s);
         </div>
-
       </div>
-<div className="bg-white p-4 rounded-2xl max-w-8xl mx-auto mt-4 shadow-md">
-<RolesAndResponsibility/>
-</div>
 
-      <div className= "bg-white p-4 rounded-2xl max-w-8xl mx-auto mt-4 shadow-md">
-      <GoalTable/>
+      <div className="bg-white p-2 sm:p-4 rounded-2xl max-w-8xl mx-auto mt-4 shadow-md">
+        <RolesAndResponsibility/>
+      </div>
+
+      <div className="bg-white p-2 sm:p-4 rounded-2xl max-w-8xl mx-auto mt-4 shadow-md">
+        <GoalTable/>
       </div>
       <WeeklySummaryPopScreen
         isOpen={weeklyPopOpen}

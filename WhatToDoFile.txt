@@ -1,2 +1,22 @@
-I want to add responsiveness throughout this project and every screen of the project.
-how could i achive this?
+"/pms/api/e/role/update"
+implement this POST api with json body:
+ {
+ "erole_emp_id": 16,
+ "erole_function_id": 1,
+ "erole_perform": 1,
+ "erole_manage": 0,
+ "erole_audit": 1,
+ "erole_rescue": 1,
+ "erole_define": 0,
+ "erole_co_id": 1,
+ "erole_division_id": 7,
+ "erole_id": 225
+ }
+
+
+ on edit button to update the data of the row. 
+ send 1 if YES, send 0 if NO from drop downs, rest collect all data from that row only.
+
+ once user click on edit button to update its data then change edit button into save button and then let user click on it again to post his data on backend, once successfull/fail then again change the save button to edit button.
+
+ also if any row have erole_id = 0 then do not show edit or delete button for them only show add button.

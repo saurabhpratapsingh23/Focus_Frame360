@@ -1,4 +1,8 @@
+
+
+
 import React, { useEffect, useState } from 'react';
+import { toast, ToastContainer } from 'react-toastify';
 // import { User } from '../components/Header';
 // import RolesAndResponsibility from '../components/RolesAndResponsibility';
 
@@ -31,7 +35,11 @@ interface Role {
   deleted: string;
 }
 
+
 const EmployeeRoleManagement: React.FC = () => {
+  // Edit/save state for each row by erole_id
+  const [editRowId, setEditRowId] = useState<number | null>(null);
+  const [editRowData, setEditRowData] = useState<Partial<Role>>({});
 
   const [roles, setRoles] = useState<Role[]>([]);
   const [divisions, setDivisions] = useState<Division[]>([]);
@@ -80,13 +88,16 @@ const EmployeeRoleManagement: React.FC = () => {
         if (!responseE.ok) throw new Error(`Read-only API error: ${responseE.status}`);
         const dataE = await responseE.json();
         setReadonlyRoles(Array.isArray(dataE.roles) ? dataE.roles : []);
+        toast.success('Roles loaded successfully.');
       } catch (err: unknown) {
         if (err instanceof Error) {
           setError(err.message || 'Failed to fetch roles');
           setReadonlyError(err.message || 'Failed to fetch read-only roles');
+          toast.error(err.message || 'Failed to fetch roles');
         } else {
           setError('Failed to fetch roles');
           setReadonlyError('Failed to fetch read-only roles');
+          toast.error('Failed to fetch roles');
         }
       } finally {
         setLoading(false);
@@ -96,9 +107,27 @@ const EmployeeRoleManagement: React.FC = () => {
     fetchRoles();
   }, []);
 
+  // Delete role handler
+  const handleDeleteRole = async (erole_id: number) => {
+    if (!window.confirm('Are you sure you want to delete this role?')) return;
+    try {
+      const baseUrl = import.meta.env.VITE_API_BASE_URL;
+      const url = `${baseUrl}/pms/api/e/role/delete/${erole_id}`;
+      const response = await fetch(url); // GET method
+      console.log(`Deleting role with ID: ${erole_id}`);
+      if (!response.ok) throw new Error(`Delete failed: ${response.status}`);
+      setRoles(prev => prev.filter(role => role.erole_id !== erole_id));
+      toast.success('Role deleted successfully.');
+    } catch (err) {
+      toast.error((err as Error).message || 'Failed to delete role.');
+      console.log((err as Error).message || 'Failed to delete role.');
+    }
+  };
+
   return (
     <div className="bg-gray-100 min-h-screen p-2 sm:p-4 md:p-6">
-      <div className="max-w-7xl mx-auto space-y-4 sm:space-y-6">
+      <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} newestOnTop closeOnClick pauseOnFocusLoss draggable pauseOnHover />
+      <div className="max-w-8xl mx-auto space-y-4 sm:space-y-6">
 
         {/* Page Title */}
         <div>
@@ -160,59 +189,165 @@ const EmployeeRoleManagement: React.FC = () => {
                               {role.function_title}<br />
                               <span className="text-xs text-gray-500">Code: {role.erole_function_code}</span>
                             </td>
-                            <td className="p-">
-                              <select
-                                className={`text-xs sm:text-sm border border-gray-300 rounded w-16 sm:w-20 p-1 ${role.erole_manage ? 'bg-green-200' : 'bg-orange-200'}`}
-                                value={role.erole_manage ? 'Yes' : 'No'}
-                                disabled
-                              >
-                                <option>No</option>
-                                <option>Yes</option>
-                              </select>
-                            </td>
-                            <td className="p-2 ">
-                              <select
-                                className={`text-xs sm:text-sm border border-gray-300 rounded w-16 sm:w-20 p-1 ${role.erole_define ? 'bg-green-200' : 'bg-orange-200'}`}
-                                value={role.erole_define ? 'Yes' : 'No'}
-                                disabled
-                              >
-                                <option>No</option>
-                                <option>Yes</option>
-                              </select>
-                            </td>
-                            <td className="p-2 ">
-                              <select
-                                className={`text-xs sm:text-sm border border-gray-300 rounded w-16 sm:w-20 p-1 ${role.erole_perform ? 'bg-green-200' : 'bg-orange-200'}`}
-                                value={role.erole_perform ? 'Yes' : 'No'}
-                                disabled
-                              >
-                                <option>No</option>
-                                <option>Yes</option>
-                              </select>
-                            </td>
-                            <td className="p-2 ">
-                              <select
-                                className={`text-xs sm:text-sm border border-gray-300 rounded w-16 sm:w-20 p-1 ${role.erole_audit ? 'bg-green-200' : 'bg-orange-200'}`}
-                                value={role.erole_audit ? 'Yes' : 'No'}
-                                disabled
-                              >
-                                <option>No</option>
-                                <option>Yes</option>
-                              </select>
-                            </td>
-                            <td className="p-2 ">
-                              <select
-                                className={`text-xs sm:text-sm border border-gray-300 rounded w-16 sm:w-20 p-1 ${role.erole_rescue ? 'bg-green-200' : 'bg-orange-200'}`}
-                                value={role.erole_rescue ? 'Yes' : 'No'}
-                                disabled
-                              >
-                                <option>No</option>
-                                <option>Yes</option>
-                              </select>
-                            </td>
+                            {/* Editable dropdowns for YES/NO fields */}
+                            {['erole_manage','erole_define','erole_perform','erole_audit','erole_rescue'].map((field) => (
+                              <td className="p-2" key={field}>
+                                {(() => {
+                                  // Determine the value to show (Yes/No)
+                                  let value: string;
+                                  if (role.erole_id === 0) {
+                                    value = (editRowId === role.erole_function_id
+                                      ? (editRowData[field as keyof Role] === 1 ? 'Yes' : 'No')
+                                      : (role[field as keyof Role] === 1 ? 'Yes' : 'No'));
+                                  } else {
+                                    value = (editRowId === role.erole_id
+                                      ? (editRowData[field as keyof Role] === 1 ? 'Yes' : 'No')
+                                      : (role[field as keyof Role] === 1 ? 'Yes' : 'No'));
+                                  }
+                                  return (
+                                    <select
+                                      className={`text-xs sm:text-sm border border-gray-300 rounded w-16 sm:w-20 p-1 ${value === 'Yes' ? 'bg-green-200' : 'bg-orange-200'}`}
+                                      value={value}
+                                      disabled={
+                                        role.erole_id === 0
+                                          ? editRowId !== role.erole_function_id
+                                          : editRowId !== role.erole_id
+                                      }
+                                      onChange={e => {
+                                        if (
+                                          (role.erole_id === 0 && editRowId === role.erole_function_id) ||
+                                          (role.erole_id !== 0 && editRowId === role.erole_id)
+                                        ) {
+                                          setEditRowData(prev => ({ ...prev, [field]: e.target.value === 'Yes' ? 1 : 0 }));
+                                        }
+                                      }}
+                                    >
+                                      <option>No</option>
+                                      <option>Yes</option>
+                                    </select>
+                                  );
+                                })()}
+                              </td>
+                            ))}
                             <td className="p-2  space-x-1 sm:space-x-2">
-                              <button className="text-xs sm:text-sm border border-gray-400 px-1 sm:px-2 py-1 rounded hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-400">Edit</button>
-                              <button className="text-xs sm:text-sm border border-red-400 text-red-600 px-1 sm:px-2 py-1 rounded hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-red-400">Delete</button>
+                              {role.erole_id === 0 ? (
+                                editRowId === role.erole_function_id ? (
+                                  <button
+                                    className="text-xs sm:text-sm border border-green-400 text-green-600 px-1 sm:px-2 py-1 rounded hover:bg-green-100 focus:outline-none focus:ring-2 focus:ring-green-400"
+                                    onClick={async () => {
+                                      const baseUrl = import.meta.env.VITE_API_BASE_URL;
+                                      const url = `${baseUrl}/pms/api/e/role/add`;
+                                      // Get erole_emp_id from sessionStorage (e_emp_id)
+                                      let empId = '';
+                                      const userStr = sessionStorage.getItem('currentUser');
+                                      if (userStr) {
+                                        try {
+                                          const parsedUser = JSON.parse(userStr);
+                                          empId = parsedUser.e_emp_id || '';
+                                        } catch {
+                                          empId = '';
+                                        }
+                                      }
+                                      const payload = {
+                                        ...role,
+                                        ...editRowData,
+                                        erole_emp_id: empId,
+                                        erole_function_id: role.erole_function_id,
+                                        erole_perform: editRowData.erole_perform ?? 0,
+                                        erole_manage: editRowData.erole_manage ?? 0,
+                                        erole_audit: editRowData.erole_audit ?? 0,
+                                        erole_rescue: editRowData.erole_rescue ?? 0,
+                                        erole_define: editRowData.erole_define ?? 0,
+                                        erole_co_id: role.erole_co_id,
+                                        erole_division_id: role.erole_division_id,
+                                        erole_id: 0,
+                                      };
+                                      // console.log('Add API Payload:', JSON.stringify(payload, null, 2));
+                                      try {
+                                        const response = await fetch(url, {
+                                          method: 'POST',
+                                          headers: { 'Content-Type': 'application/json' },
+                                          body: JSON.stringify(payload),
+                                        });
+                                        if (!response.ok) throw new Error(`Add failed: ${response.status}`);
+                                        const newRole = await response.json();
+                                        setRoles(prev => prev.map(r => r === role ? newRole : r));
+                                        setEditRowId(null);
+                                        setEditRowData({});
+                                        toast.success('Role added successfully.');
+                                      } catch (err) {
+                                        toast.error((err as Error).message || 'Failed to add role.');
+                                      }
+                                    }}
+                                  >
+                                    Send
+                                  </button>
+                                ) : (
+                                  <button
+                                    className="text-xs sm:text-sm border border-green-400 text-green-600 px-1 sm:px-2 py-1 rounded hover:bg-green-100 focus:outline-none focus:ring-2 focus:ring-green-400"
+                                    onClick={() => {
+                                      setEditRowId(role.erole_function_id);
+                                      setEditRowData({ ...role });
+                                    }}
+                                  >
+                                    Add
+                                  </button>
+                                )
+                              ) : editRowId === role.erole_id ? (
+                                <button
+                                  className="text-xs sm:text-sm border border-blue-400 text-blue-600 px-1 sm:px-2 py-1 rounded hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                                  onClick={async () => {
+                                    const baseUrl = import.meta.env.VITE_API_BASE_URL;
+                                    const url = `${baseUrl}/pms/api/e/role/update`;
+                                    const payload = {
+                                      erole_emp_id: role.erole_emp_id,
+                                      erole_function_id: role.erole_function_id,
+                                      erole_perform: editRowData.erole_perform ?? role.erole_perform,
+                                      erole_manage: editRowData.erole_manage ?? role.erole_manage,
+                                      erole_audit: editRowData.erole_audit ?? role.erole_audit,
+                                      erole_rescue: editRowData.erole_rescue ?? role.erole_rescue,
+                                      erole_define: editRowData.erole_define ?? role.erole_define,
+                                      erole_co_id: role.erole_co_id,
+                                      erole_division_id: role.erole_division_id,
+                                      erole_id: role.erole_id,
+                                    };
+                                    try {
+                                      const response = await fetch(url, {
+                                        method: 'POST',
+                                        headers: { 'Content-Type': 'application/json' },
+                                        body: JSON.stringify(payload),
+                                      });
+                                      if (!response.ok) throw new Error(`Update failed: ${response.status}`);
+                                      setRoles(prev => prev.map(r => r.erole_id === role.erole_id ? { ...r, ...editRowData } : r));
+                                      setEditRowId(null);
+                                      setEditRowData({});
+                                      toast.success('Role updated successfully.');
+                                    } catch (err) {
+                                      toast.error((err as Error).message || 'Failed to update role.');
+                                    }
+                                  }}
+                                >
+                                  Save
+                                </button>
+                              ) : (
+                                <>
+                                  <button
+                                    className="text-xs sm:text-sm border border-gray-400 px-1 sm:px-2 py-1 rounded hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                                    onClick={() => {
+                                      setEditRowId(role.erole_id);
+                                      setEditRowData({ ...role });
+                                    }}
+                                  >
+                                    Edit
+                                  </button>
+                                  <button
+                                    className="text-xs sm:text-sm border border-red-400 text-red-600 px-1 sm:px-2 py-1 rounded hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-red-400"
+                                    onClick={() => handleDeleteRole(role.erole_id)}
+                                  >
+                                    Delete
+                                  </button>
+                                </>
+                              )}
                             </td>
                           </tr>
                         ))
@@ -222,7 +357,7 @@ const EmployeeRoleManagement: React.FC = () => {
               )}
             </div>
             <div className="flex flex-col sm:flex-row justify-end gap-2 px-2 sm:px-4 py-3 border-t bg-gray-50">
-              <button className="bg-green-600 hover:bg-green-700 text-white text-xs sm:text-sm px-3 sm:px-4 py-1 rounded focus:outline-none focus:ring-2 focus:ring-green-400">SAVE</button>
+              {/* <button className="bg-green-600 hover:bg-green-700 text-white text-xs sm:text-sm px-3 sm:px-4 py-1 rounded focus:outline-none focus:ring-2 focus:ring-green-400">SAVE</button> */}
             </div>
           </div>
         </div>
@@ -243,33 +378,32 @@ const EmployeeRoleManagement: React.FC = () => {
                   <tr><td colSpan={2} className="p-4 text-center">Loading...</td></tr>
                 ) : readonlyError ? (
                   <tr><td colSpan={2} className="p-4 text-red-600 text-center">{readonlyError}</td></tr>
-                ) : readonlyRoles.filter(role => selectedDivision == null || role.erole_division_id === selectedDivision).length === 0 ? (
-                  <tr><td colSpan={2} className="p-4 text-gray-500 text-center">No roles found for this division.</td></tr>
+                ) : readonlyRoles.length === 0 ? (
+                  <tr><td colSpan={2} className="p-4 text-orange-500 text-center">No roles found.</td></tr>
                 ) : (
-                  readonlyRoles
-                    .filter(role => selectedDivision == null || role.erole_division_id === selectedDivision)
-                    .map((role) => {
-                      const responsibilities = [];
-                      if (role.erole_manage) responsibilities.push('Manage');
-                      if (role.erole_define) responsibilities.push('Define');
-                      if (role.erole_perform) responsibilities.push('Perform');
-                      if (role.erole_audit) responsibilities.push('Audit');
-                      if (role.erole_rescue) responsibilities.push('Rescue');
-                      return (
-                        <tr key={role.erole_id || role.erole_function_id} className="border-t">
-                          <td className="p-2">{role.function_title}</td>
-                          <td className="p-2 text-center">
-                            {responsibilities.length === 0 ? (
-                              <span className="text-xs text-gray-400">None</span>
-                            ) : (
-                              responsibilities.map((resp) => (
-                                <span key={resp} className="bg-gray-500 text-white text-xs rounded-full px-2 py-1 opacity-75 mr-1">{resp}</span>
-                              ))
-                            )}
-                          </td>
-                        </tr>
-                      );
-                    })
+                  readonlyRoles.map((role) => {
+                    const responsibilities = [];
+                    if (role.erole_manage) responsibilities.push('Manage');
+                    if (role.erole_define) responsibilities.push('Define');
+                    if (role.erole_perform) responsibilities.push('Perform');
+                    if (role.erole_audit) responsibilities.push('Audit');
+                    if (role.erole_rescue) responsibilities.push('Rescue');
+                    return (
+                      <tr key={role.erole_id || role.erole_function_id} className="border-t">
+                        <td className="p-2 text-blue-800 font-bold">
+                          <span className="bg-orange-400 text-white text-xs rounded-full px-2 py-1 opacity-75 mr-1">{role.division_name + " "}</span>{role.function_title}</td>
+                        <td className="p-2 text-center">
+                          {responsibilities.length === 0 ? (
+                            <span className="text-xs text-gray-400">None</span>
+                          ) : (
+                            responsibilities.map((resp) => (
+                              <span key={resp} className="bg-green-800 text-white text-xs rounded-full px-2 py-1 opacity-75 mr-1">{resp}</span>
+                            ))
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })
                 )}
               </tbody>
             </table>

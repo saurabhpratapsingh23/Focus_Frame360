@@ -135,8 +135,8 @@ const GoalTable: React.FC = () => {
     setHasMore(filtered.length > initialDisplay.length);
   }, [goals, filterWeek, filterGoalId, sortByWeek, sortByGoalId, currentPage]);
 
-  if (loading) return <div className="p-4 text-center">Loading goals...</div>;
-  if (error) return <div className="p-4 text-center text-red-500">{error}</div>;
+  if (loading) return <div className="flex justify-center items-center min-h-[120px] text-gray-600 text-base sm:text-lg">Loading goals...</div>;
+  if (error) return <div className="flex justify-center items-center min-h-[120px] text-red-600 text-base sm:text-lg">{error}</div>;
 
   const handleUpdateClick = async (goal: Goal) => {
     // Prepare payload for /pms/api/e/getwgrow
@@ -323,11 +323,11 @@ const GoalTable: React.FC = () => {
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 max-w-8xl mx-auto p-2 sm:p-4">
       {/* Table 1: Goals */}
       <div>
         <div className="mb-2">
-          <h2 className="flex justify-between items-center text-[25px] px-2 py-2 text-white font-bold mb-4 bg-gray-900 rounded-t-xl">
+          <h2 className="flex flex-col sm:flex-row justify-between items-center text-lg sm:text-2xl px-2 py-2 text-white font-bold mb-4 bg-gray-900 rounded-t-xl gap-2">
             <span className="content-center flex-shrink-0">Goals (Weekly Details)</span>
             <div className="flex gap-2 flex-wrap items-end">
               <div className="flex flex-col gap-1">
@@ -385,7 +385,7 @@ const GoalTable: React.FC = () => {
           </h2>
         </div>
         <div className="overflow-x-auto">
-          <table className="min-w-full text-sm ">
+          <table className="min-w-[900px] w-full text-xs sm:text-sm ">
             <thead className="bg-blue-100 text-[95%] ">
               <tr>
                 <th className="border border-gray-100 rounded-tl-lg font-bold px-2 py-1">Week #</th>
@@ -410,19 +410,19 @@ const GoalTable: React.FC = () => {
             <tbody className='border border-gray-200 '>
               {displayedGoals.map((g, i) => (
                 <tr key={i} className={goalRowClasses[i]}>
-                  <td className="border border-gray-300  px-2 py-1 text-center">{g.goal_week_number}</td>
-                  <td className="border border-gray-300 px-2 py-1">{g.goal_week_start_date}</td>
-                  <td className="border border-gray-300 px-2 py-1">{g.goal_week_end_date}</td>
-                  <td className="border border-gray-300 px-2 py-1 w-30 ">{g.goal_id.trim()}</td>
-                  <td className="border border-gray-300 px-2 py-1 font-bold">{g.goal_title}</td>
-                  <td className="border border-gray-300 px-2 py-1 whitespace-pre-line">{g.goal_description}</td>
-                  <td className="border border-gray-300 px-2 py-1 text-center">{g.goal_target}</td>
-                  <td className="border border-gray-300 px-2 py-1 whitespace-pre-line">{g.goal_action_performed}</td>
-                  <td className="border border-gray-300 px-2 py-1 whitespace-pre-line">{g.goal_challenges}</td>
-                  <td className="border border-gray-300 px-2 py-1 whitespace-pre-line">{g.goal_unfinished_tasks}</td>
-                  <td className="border border-gray-300 px-2 py-1 whitespace-pre-line">{g.goal_weekly_next_actions}</td>
-                  <td className="border border-gray-300 px-2 py-1 text-center">{g.goal_effort}</td>
-                  <td className="border border-gray-300 px-2 py-1 text-center">
+                  <td className="border border-gray-300 px-1 sm:px-2 py-1 text-center text-xs sm:text-sm">{g.goal_week_number}</td>
+                  <td className="border border-gray-300 px-1 sm:px-2 py-1 text-xs sm:text-sm">{g.goal_week_start_date}</td>
+                  <td className="border border-gray-300 px-1 sm:px-2 py-1 text-xs sm:text-sm">{g.goal_week_end_date}</td>
+                  <td className="border border-gray-300 px-1 sm:px-2 py-1 w-30 text-xs sm:text-sm">{g.goal_id.trim()}</td>
+                  <td className="border border-gray-300 px-1 sm:px-2 py-1 font-bold text-xs sm:text-sm">{g.goal_title}</td>
+                  <td className="border border-gray-300 px-1 sm:px-2 py-1 whitespace-pre-line text-xs sm:text-sm">{g.goal_description}</td>
+                  <td className="border border-gray-300 px-1 sm:px-2 py-1 text-center text-xs sm:text-sm">{g.goal_target}</td>
+                  <td className="border border-gray-300 px-1 sm:px-2 py-1 whitespace-pre-line text-xs sm:text-sm">{g.goal_action_performed}</td>
+                  <td className="border border-gray-300 px-1 sm:px-2 py-1 whitespace-pre-line text-xs sm:text-sm">{g.goal_challenges}</td>
+                  <td className="border border-gray-300 px-1 sm:px-2 py-1 whitespace-pre-line text-xs sm:text-sm">{g.goal_unfinished_tasks}</td>
+                  <td className="border border-gray-300 px-1 sm:px-2 py-1 whitespace-pre-line text-xs sm:text-sm">{g.goal_weekly_next_actions}</td>
+                  <td className="border border-gray-300 px-1 sm:px-2 py-1 text-center text-xs sm:text-sm">{g.goal_effort}</td>
+                  <td className="border border-gray-300 px-1 sm:px-2 py-1 text-center text-xs sm:text-sm">
                     {mapRating(g.goal_own_rating) === 'Green' && (
                         <span className="inline-block w-4 h-4 rounded-full bg-green-500 align-middle" title="Green"></span>
                       )}
@@ -434,7 +434,7 @@ const GoalTable: React.FC = () => {
                       )}
                     {/* <span style={{ fontSize: '0.8em', color: '#888', marginLeft: 4 }}>{g.goal_own_rating}</span> */}
                   </td>
-                  <td className="border border-gray-300 px-2 py-1 text-center">
+                  <td className="border border-gray-300 px-1 sm:px-2 py-1 text-center text-xs sm:text-sm">
                     {mapRating(g.goal_auditor_rating) === 'Green' && (
                         <span className="inline-block w-4 h-4 rounded-full bg-green-500 align-middle" title="Green"></span>
                       )}
@@ -446,10 +446,10 @@ const GoalTable: React.FC = () => {
                       )}
                     {/* <span style={{ fontSize: '0.8em', color: '#888', marginLeft: 4 }}>{g.goal_auditor_rating}</span> */}
                   </td>
-                  <td className="border border-gray-300 px-2 py-1 whitespace-pre-line">{g.goal_auditor_comments}</td>
-                  <td className="border border-gray-300 px-2 py-1 text-center">{g.goal_status}</td>
-                  <td className=" border border-gray-300 px-2 py-2">
-                    <button className="bg-blue-900 hover:bg-blue-700 text-white px-3 py-1 text-sm rounded-md" onClick={() => handleUpdateClick(g)}>Edit</button>
+                  <td className="border border-gray-300 px-1 sm:px-2 py-1 whitespace-pre-line text-xs sm:text-sm">{g.goal_auditor_comments}</td>
+                  <td className="border border-gray-300 px-1 sm:px-2 py-1 text-center text-xs sm:text-sm">{g.goal_status}</td>
+                  <td className="border border-gray-300 px-1 sm:px-2 py-2">
+                    <button className="bg-blue-900 hover:bg-blue-700 text-white px-2 sm:px-3 py-1 text-xs sm:text-sm rounded-md" onClick={() => handleUpdateClick(g)}>Edit</button>
                   </td>
                 </tr>
               ))}
@@ -462,15 +462,14 @@ const GoalTable: React.FC = () => {
           <div className="flex justify-center mt-4 mb-6">
             <button
               onClick={loadMore}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-semibold transition-colors duration-200 shadow-md hover:shadow-lg"
+              className="bg-blue-600 hover:bg-blue-700 text-white px-4 sm:px-6 py-2 rounded-lg font-semibold transition-colors duration-200 shadow-md hover:shadow-lg text-xs sm:text-base"
             >
               Load More ({displayedGoals.length} of {goals.length} shown)
             </button>
           </div>
         )}
-        
         {!hasMore && displayedGoals.length > 0 && (
-          <div className="text-center mt-4 mb-6 text-gray-600">
+          <div className="text-center mt-4 mb-6 text-gray-600 text-xs sm:text-base">
             Showing all {goals.length} goals
           </div>
         )}
@@ -478,10 +477,10 @@ const GoalTable: React.FC = () => {
 
       {/* Table 2: Goal Summary */}
       <div>
-        <h2 className="text-[30px] text-center  px-2  py-2 text-white font-bold mb-4 bg-gray-900 rounded-t-xl">Goal Summary</h2>
+        <h2 className="text-lg sm:text-2xl text-center px-2 py-2 text-white font-bold mb-4 bg-gray-900 rounded-t-xl">Goal Summary</h2>
         <div className="overflow-x-auto">
-          <table className="min-w-full text-[14px] ">
-            <thead className="bg-blue-100 text-[120%]">
+          <table className="min-w-[600px] w-full text-xs sm:text-sm ">
+            <thead className="bg-blue-100 text-[110%] sm:text-[120%]">
               <tr>
                 <th className="rounded-tl-lg px-4 py-2">Goal ID</th>
                 <th className=" px-2 py-1">Title</th>
@@ -494,14 +493,11 @@ const GoalTable: React.FC = () => {
             <tbody className='border border-gray-200 '>
               {goalsSummary.map((summary, i) => (
                 <tr key={i} className={summaryRowClasses[i]}>
-                  <td className=" px-2 py-2 w-25">{summary.goal_es_id}</td>
-                  <td className=" px-2 py-2 font-bold">{summary.goal_es_title}</td>
-                  <td className=" px-2 py-2 whitespace-pre-line">{summary.goal_es_description}</td>
-                  <td className=" px-2 py-2 text-center">{summary.goal_es_effort}</td>
-                  <td className=" px-2 py-2 text-center">{summary.goal_es_efforts_percentage + "%"}</td>
-                  {/* <td className="px-2 py-2">
-                    <button className="bg-blue-900 hover:bg-blue-700 text-white px-3 py-1 text-sm rounded-md" onClick={() => handleUpdateClick(summary as any)}>Update</button>
-                  </td> */}
+                  <td className="px-1 sm:px-2 py-2 w-25 text-xs sm:text-sm">{summary.goal_es_id}</td>
+                  <td className="px-1 sm:px-2 py-2 font-bold text-xs sm:text-sm">{summary.goal_es_title}</td>
+                  <td className="px-1 sm:px-2 py-2 whitespace-pre-line text-xs sm:text-sm">{summary.goal_es_description}</td>
+                  <td className="px-1 sm:px-2 py-2 text-center text-xs sm:text-sm">{summary.goal_es_effort}</td>
+                  <td className="px-1 sm:px-2 py-2 text-center text-xs sm:text-sm">{summary.goal_es_efforts_percentage + "%"}</td>
                 </tr>
               ))}
             </tbody>

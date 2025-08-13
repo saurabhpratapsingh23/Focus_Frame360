@@ -1,4 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import jsPDF from 'jspdf';
+import FileDownloadOutlinedIcon from '@mui/icons-material/FileDownloadOutlined';
 
 interface WeeklySummaryPopScreenProps {
   isOpen: boolean;
@@ -24,7 +26,7 @@ const topFields = [
   { key: 'ws_WFO', label: 'WFO' },
   { key: 'ws_efforts', label: 'Efforts (In hrs)' },
   { key: 'ws_leaves', label: 'Leaves' },
-  { key: 'ws_extra_days', label: 'Work On Holidays' },
+  { key: 'ws_extra_days', label: 'WOH' },
 ];
 
 // Status options for dropdown
@@ -75,6 +77,36 @@ const getStatusCode = (displayValue: string | null | undefined): string => {
 
 const WeeklySummaryPopScreen: React.FC<WeeklySummaryPopScreenProps> = ({ isOpen, data, onClose, onSave }) => {
   const [form, setForm] = useState<any>({ ...data });
+  const printRef = useRef<HTMLDivElement>(null);
+
+  // Download all displayed data as PDF
+  const handlePrintFunction = async () => {
+    // Convert all data to simple text format
+    let text = 'Weekly Summary Details\n\n';
+    text += topFields.map(({ key, label }) => `${label}: ${form[key] ?? ''}`).join('\n');
+    text += '\nStatus: ' + (form.ws_status_display || 'In-Progress') + '\n';
+    text += '\n';
+    text += editableFields.map(({ key, label }) => `${label}:\n${form[key] ?? ''}\n`).join('\n');
+
+    const pdf = new jsPDF({ orientation: 'p', unit: 'pt', format: 'a4' });
+    const lineHeight = 18;
+    const margin = 40;
+    const maxWidth = pdf.internal.pageSize.getWidth() - margin * 2;
+    let y = margin;
+    pdf.setFont('helvetica');
+    pdf.setFontSize(13);
+    const lines = pdf.splitTextToSize(text, maxWidth);
+    lines.forEach(line => {
+      if (y > pdf.internal.pageSize.getHeight() - margin) {
+        pdf.addPage();
+        y = margin;
+      }
+      pdf.text(line, margin, y);
+      y += lineHeight;
+    });
+    pdf.save('WeeklySummary.pdf');
+  };
+
 
   useEffect(() => {
     // Only initialize form if data is available
@@ -125,8 +157,9 @@ const WeeklySummaryPopScreen: React.FC<WeeklySummaryPopScreenProps> = ({ isOpen,
 
   return (
     <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center">
-      <div className="relative w-full max-w-[1400px] mx-auto my-8 bg-white rounded-lg shadow-lg p-6 overflow-y-auto max-h-[80vh] border border-gray-900 flex flex-col">
-        <h2 className="text-xl md:text-2xl font-bold text-center text-white bg-gray-900 px-4 py-3 rounded-t-md shadow">Weekly Summary Details</h2>
+      <div ref={printRef} className="relative w-full max-w-[1400px] mx-auto my-8 bg-white rounded-lg shadow-lg p-6 overflow-y-auto max-h-[80vh] border border-gray-900 flex flex-col">
+        <h2 className="text-xl md:text-2xl font-bold  text-center text-white bg-gray-900 px-4 py-3 rounded-t-md shadow">
+          <span className="absolute top-8 right-9 cursor-pointer" onClick={handlePrintFunction}><FileDownloadOutlinedIcon/></span>Weekly Summary Details</h2>
         {/* Top fields in a single line */}
 
         <div className="flex flex-wrap mt-2 gap-4 mb-4">
