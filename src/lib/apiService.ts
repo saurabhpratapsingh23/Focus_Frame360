@@ -84,6 +84,35 @@ export interface GetWsRowResponse {
   data?: any;
 }
 
+export interface Division {
+  division_id: number;
+  division_code: string;
+  division: string;
+  division_description: string;
+  co_id: number;
+  division_hod: string;
+}
+
+export interface Role {
+  erole_emp_id: number;
+  erole_emp_code: string;
+  erole_function_id: number;
+  erole_function_code: string;
+  erole_perform: number;
+  erole_manage: number;
+  erole_audit: number;
+  erole_rescue: number;
+  erole_define: number;
+  erole_co_id: number;
+  erole_division_code: string;
+  erole_division_id: number;
+  erole_id: number;
+  flag: string;
+  division_name: string;
+  function_title: string;
+  deleted: string;
+}
+
 // API service class
 class ApiService {
   private baseURL = `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8081'}/pms/api`;
