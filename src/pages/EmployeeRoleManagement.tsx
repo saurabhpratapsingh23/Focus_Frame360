@@ -1,10 +1,11 @@
-
-
-
 import React, { useEffect, useState } from 'react';
 import { toast, ToastContainer } from 'react-toastify';
 // import { User } from '../components/Header';
 // import RolesAndResponsibility from '../components/RolesAndResponsibility';
+import EditIcon from '@mui/icons-material/Edit';
+import AddIcon from '@mui/icons-material/Add';
+import SendIcon from '@mui/icons-material/Send';
+import DeleteIcon from '@mui/icons-material/Delete';
 
 interface Division {
   division_id: number;
@@ -233,7 +234,7 @@ const EmployeeRoleManagement: React.FC = () => {
                               {role.erole_id === 0 ? (
                                 editRowId === role.erole_function_id ? (
                                   <button
-                                    className="text-xs sm:text-sm border border-green-400 text-green-600 px-1 sm:px-2 py-1 rounded hover:bg-green-100 focus:outline-none focus:ring-2 focus:ring-green-400"
+                                    className="bg-blue-400 text-blue text-xs cursor-pointer sm:text-sm  px-1 sm:px-2 py-1 rounded-2xl hover:bg-blue-500 hover:text-white focus:outline-none focus:ring-2 focus:ring-blue-400"
                                     onClick={async () => {
                                       const baseUrl = import.meta.env.VITE_API_BASE_URL;
                                       const url = `${baseUrl}/pms/api/e/role/add`;
@@ -280,22 +281,23 @@ const EmployeeRoleManagement: React.FC = () => {
                                       }
                                     }}
                                   >
-                                    Send
+                                    <SendIcon/>
                                   </button>
                                 ) : (
                                   <button
-                                    className="text-xs sm:text-sm border border-green-400 text-green-600 px-1 sm:px-2 py-1 rounded hover:bg-green-100 focus:outline-none focus:ring-2 focus:ring-green-400"
+                                    className="bg-blue-400 text-blue text-xs cursor-pointer sm:text-sm  px-1 sm:px-2 py-1 rounded-2xl hover:bg-blue-500 hover:text-white focus:outline-none focus:ring-2 focus:ring-blue-400"
                                     onClick={() => {
                                       setEditRowId(role.erole_function_id);
                                       setEditRowData({ ...role });
                                     }}
+                                    title="Add Role"
                                   >
-                                    Add
+                                    <AddIcon />
                                   </button>
                                 )
                               ) : editRowId === role.erole_id ? (
                                 <button
-                                  className="text-xs sm:text-sm border border-blue-400 text-blue-600 px-1 sm:px-2 py-1 rounded hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                                  className="bg-blue-400 text-blue text-xs cursor-pointer sm:text-sm  px-1 sm:px-2 py-1 rounded-2xl hover:bg-blue-500 hover:text-white focus:outline-none focus:ring-2 focus:ring-blue-400"
                                   onClick={async () => {
                                     const baseUrl = import.meta.env.VITE_API_BASE_URL;
                                     const url = `${baseUrl}/pms/api/e/role/update`;
@@ -327,24 +329,24 @@ const EmployeeRoleManagement: React.FC = () => {
                                     }
                                   }}
                                 >
-                                  Save
+                                  <SendIcon/>
                                 </button>
                               ) : (
                                 <>
                                   <button
-                                    className="text-xs sm:text-sm border border-gray-400 px-1 sm:px-2 py-1 rounded hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                                    className=" text-blue text-xs cursor-pointer sm:text-sm  px-1 sm:px-2 py-1 rounded-2xl hover:bg-blue-500 hover:text-white focus:outline-none focus:ring-2 focus:ring-blue-400"
                                     onClick={() => {
                                       setEditRowId(role.erole_id);
                                       setEditRowData({ ...role });
                                     }}
                                   >
-                                    Edit
+                                     <EditIcon fontSize="small" />
                                   </button>
                                   <button
-                                    className="text-xs sm:text-sm border border-red-400 text-red-600 px-1 sm:px-2 py-1 rounded hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-red-400"
+                                    className="text-xs sm:text-sm  text-red-600 px-1 sm:px-2 py-1 rounded hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-red-400 cursor-pointer"
                                     onClick={() => handleDeleteRole(role.erole_id)}
                                   >
-                                    Delete
+                                    <DeleteIcon fontSize="small" />
                                   </button>
                                 </>
                               )}

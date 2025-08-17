@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
-export interface User {
+interface User {
   e_emp_code: string;
   e_fullname: string;
   e_work_location: string;

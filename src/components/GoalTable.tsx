@@ -1,6 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import PopScreen from './PopScreen';
 import { toast } from 'react-toastify';
+import EditIcon from '@mui/icons-material/Edit';
+import TablePagination from '@mui/material/TablePagination';
+import TablePaginationActions from './TablePaginationActions';
 
 interface Goal {
   goal_rec_id: number;
@@ -58,10 +61,8 @@ const GoalTable: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [popOpen, setPopOpen] = useState(false);
   const [selectedGoal, setSelectedGoal] = useState<Goal | null>(null);
-  const [displayedGoals, setDisplayedGoals] = useState<Goal[]>([]);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [hasMore, setHasMore] = useState(true);
-  const itemsPerPage = 20;
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
   // Filter and sort states
   const [filterWeek, setFilterWeek] = useState<string>('');
   const [filterGoalId, setFilterGoalId] = useState<string>('');
@@ -114,7 +115,7 @@ const GoalTable: React.FC = () => {
   }, []);
 
   // Filter, sort, and paginate displayedGoals
-  useEffect(() => {
+  const getFilteredSortedGoals = () => {
     let filtered = goals;
     if (filterWeek) {
       filtered = filtered.filter(g => g.goal_week_number.toString() === filterWeek);
@@ -130,10 +131,13 @@ const GoalTable: React.FC = () => {
         ? aId.localeCompare(bId)
         : bId.localeCompare(aId);
     });
-    const initialDisplay = filtered.slice(0, itemsPerPage * currentPage);
-    setDisplayedGoals(initialDisplay);
-    setHasMore(filtered.length > initialDisplay.length);
-  }, [goals, filterWeek, filterGoalId, sortByWeek, sortByGoalId, currentPage]);
+    return filtered;
+  };
+
+  const filteredGoals = getFilteredSortedGoals();
+  const paginatedGoals = rowsPerPage > 0
+    ? filteredGoals.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+    : filteredGoals;
 
   if (loading) return <div className="flex justify-center items-center min-h-[120px] text-gray-600 text-base sm:text-lg">Loading goals...</div>;
   if (error) return <div className="flex justify-center items-center min-h-[120px] text-red-600 text-base sm:text-lg">{error}</div>;
@@ -283,11 +287,7 @@ const GoalTable: React.FC = () => {
         setGoals(sortedGoals);
         setGoalsSummary(data.goalsSummary || []);
         
-        // Initialize pagination
-        const initialDisplay = sortedGoals.slice(0, itemsPerPage);
-        setDisplayedGoals(initialDisplay);
-        setHasMore(sortedGoals.length > itemsPerPage);
-        setCurrentPage(1);
+
         
         setLoading(false);
       })
@@ -297,20 +297,10 @@ const GoalTable: React.FC = () => {
       });
   };
 
-  // Add load more functionality
-  const loadMore = () => {
-    const nextPage = currentPage + 1;
-    const startIndex = 0;
-    const endIndex = nextPage * itemsPerPage;
-    const newDisplayedGoals = goals.slice(startIndex, endIndex);
-    
-    setDisplayedGoals(newDisplayedGoals);
-    setCurrentPage(nextPage);
-    setHasMore(endIndex < goals.length);
-  };
+
 
   // Grouped row classes for zebra striping by goal_id
-  const goalRowClasses = getGroupedRowClasses(displayedGoals, g => g.goal_id.trim());
+  const goalRowClasses = getGroupedRowClasses(paginatedGoals, g => g.goal_id.trim());
   const summaryRowClasses = getGroupedRowClasses(goalsSummary, s => s.goal_es_id.trim());
 
   // Helper to map rating codes to color names
@@ -408,7 +398,7 @@ const GoalTable: React.FC = () => {
               </tr>
             </thead>
             <tbody className='border border-gray-200 '>
-              {displayedGoals.map((g, i) => (
+              {paginatedGoals.map((g, i) => (
                 <tr key={i} className={goalRowClasses[i]}>
                   <td className="border border-gray-300 px-1 sm:px-2 py-1 text-center text-xs sm:text-sm">{g.goal_week_number}</td>
                   <td className="border border-gray-300 px-1 sm:px-2 py-1 text-xs sm:text-sm">{g.goal_week_start_date}</td>
@@ -447,9 +437,25 @@ const GoalTable: React.FC = () => {
                     {/* <span style={{ fontSize: '0.8em', color: '#888', marginLeft: 4 }}>{g.goal_auditor_rating}</span> */}
                   </td>
                   <td className="border border-gray-300 px-1 sm:px-2 py-1 whitespace-pre-line text-xs sm:text-sm">{g.goal_auditor_comments}</td>
-                  <td className="border border-gray-300 px-1 sm:px-2 py-1 text-center text-xs sm:text-sm">{g.goal_status}</td>
+                  <td className="border border-gray-300 w-25 text-center">
+                    {(() => {
+                      const status = (g.goal_status || '').toLowerCase();
+                      let color = 'bg-gray-700';
+                      if (status === 'in progress' || status === 'in-progress') color = 'bg-orange-400';
+                      else if (status === 'pending') color = 'bg-red-500';
+                      else if (status === 'completed') color = 'bg-green-500';
+                      return (
+                        <span className={`${color} text-white text-[11px] sm:text-[13px] rounded-full px-2 py-2 opacity-75 mr-2`}>
+                          {g.goal_status}
+                        </span>
+                      );
+                    })()}
+                  </td>
                   <td className="border border-gray-300 px-1 sm:px-2 py-2">
-                    <button className="bg-blue-900 hover:bg-blue-700 text-white px-2 sm:px-3 py-1 text-xs sm:text-sm rounded-md" onClick={() => handleUpdateClick(g)}>Edit</button>
+                    <button className="bg-blue-400 hover:bg-blue-600 hover:text-white text-blue px-2 sm:px-3 py-1 text-xs sm:text-sm rounded-2xl flex items-center justify-center cursor-pointer" onClick={() => handleUpdateClick(g)}
+                      title="Edit">
+                        <EditIcon fontSize="small" />
+                        </button>
                   </td>
                 </tr>
               ))}
@@ -457,22 +463,30 @@ const GoalTable: React.FC = () => {
           </table>
         </div>
         
-        {/* Load More Button */}
-        {hasMore && (
-          <div className="flex justify-center mt-4 mb-6">
-            <button
-              onClick={loadMore}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-4 sm:px-6 py-2 rounded-lg font-semibold transition-colors duration-200 shadow-md hover:shadow-lg text-xs sm:text-base"
-            >
-              Load More ({displayedGoals.length} of {goals.length} shown)
-            </button>
-          </div>
-        )}
-        {!hasMore && displayedGoals.length > 0 && (
-          <div className="text-center mt-4 mb-6 text-gray-600 text-xs sm:text-base">
-            Showing all {goals.length} goals
-          </div>
-        )}
+        {/* Table Pagination */}
+        <div className="flex justify-end mt-2 p-2 rounded-b-xl">
+
+        <TablePagination
+        className="bg-gray-400 rounded-2xl"
+          rowsPerPageOptions={[5, 10, 25, { label: 'All', value: -1 }]}
+          colSpan={3}
+          count={filteredGoals.length}
+          rowsPerPage={rowsPerPage}
+          page={page}
+          slotProps={{
+            select: {
+              inputProps: { 'aria-label': 'rows per page' },
+              native: true,
+            },
+          }}
+          onPageChange={(event, newPage) => setPage(newPage)}
+          onRowsPerPageChange={event => {
+            setRowsPerPage(parseInt(event.target.value, 10));
+            setPage(0);
+          }}
+          ActionsComponent={TablePaginationActions}
+        />
+        </div>
       </div>
 
       {/* Table 2: Goal Summary */}
@@ -493,7 +507,7 @@ const GoalTable: React.FC = () => {
             <tbody className='border border-gray-200 '>
               {goalsSummary.map((summary, i) => (
                 <tr key={i} className={summaryRowClasses[i]}>
-                  <td className="px-1 sm:px-2 py-2 w-25 text-xs sm:text-sm">{summary.goal_es_id}</td>
+                  <td className="px-1 sm:px-2 py-2 w-40 text-xs sm:text-sm">{summary.goal_es_id}</td>
                   <td className="px-1 sm:px-2 py-2 font-bold text-xs sm:text-sm">{summary.goal_es_title}</td>
                   <td className="px-1 sm:px-2 py-2 whitespace-pre-line text-xs sm:text-sm">{summary.goal_es_description}</td>
                   <td className="px-1 sm:px-2 py-2 text-center text-xs sm:text-sm">{summary.goal_es_effort}</td>

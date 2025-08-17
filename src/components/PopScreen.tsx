@@ -76,7 +76,7 @@ const PopScreen: React.FC<PopScreenProps> = ({ isOpen, goal, onClose, onSubmit }
           : ["", "In progress", "Completed", "Pending"];
       return (
         <div className="flex flex-col text-sm">
-          <label className="font-semibold mb-1 capitalize">{label}</label>
+          <label className="font-bold mb-1 capitalize">{label}</label>
           <select
             name={key}
             value={form[key] ?? ""}
@@ -96,7 +96,7 @@ const PopScreen: React.FC<PopScreenProps> = ({ isOpen, goal, onClose, onSubmit }
     if (editableFields.some((field) => field.key === key)) {
       return (
         <div className="flex flex-col text-sm">
-          <label className="font-semibold mb-1 capitalize">{label}</label>
+          <label className="font-bold mb-1 capitalize">{label}</label>
           {key === "goal_effort" ? (
             <input
               type="number"
@@ -111,9 +111,9 @@ const PopScreen: React.FC<PopScreenProps> = ({ isOpen, goal, onClose, onSubmit }
               value={form[key] ?? ""}
               onChange={handleChange}
               className={`border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none ${
-                key === "goal_team_members" ? "h-10" : "h-28"
+                key === "goal_team_members" ? "h-10" : key === "goal_data_source_description" ? "h-10" : "h-28"
               }`}
-              rows={3}
+              rows={2}
             />
           )}
         </div>
@@ -122,8 +122,8 @@ const PopScreen: React.FC<PopScreenProps> = ({ isOpen, goal, onClose, onSubmit }
 
     return (
       <div className="flex flex-col text-sm">
-        <label className="font-semibold mb-1 capitalize">{label}</label>
-        <div className="bg-gray-100 px-3 py-2 rounded border border-gray-200 text-gray-800">
+        <label className="font-bold  mb-1 capitalize">{label}</label>
+        <div className="bg-gray-100 px-3 py-2 rounded border border-gray-400 text-gray-800">
           {form[key]}
         </div>
       </div>
@@ -132,7 +132,7 @@ const PopScreen: React.FC<PopScreenProps> = ({ isOpen, goal, onClose, onSubmit }
 
   return (
     <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center">
-      <div className="relative w-full max-w-6xl mx-auto bg-white rounded-xl shadow-xl p-6 overflow-y-auto max-h-[90vh] border border-gray-900 ">
+      <div className="relative w-full max-w-[1380px] mx-auto bg-white rounded-xl shadow-xl p-6 overflow-y-auto max-h-[90vh] border border-gray-900 ">
         <h2 className="text-2xl text-center mt-0 font-bold bg-gray-900 text-white px-4 py-3 rounded-t-lg rounded-b-lg mb-4 w-full shadow">
           UPDATE GOAL
         </h2>

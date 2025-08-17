@@ -8,6 +8,7 @@ import RolesPopScreen from '../components/RolesPopScreen';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import RolesAndResponsibility from '../components/RolesAndResponsibility';
+import EditIcon from '@mui/icons-material/Edit';
 
 export interface EmployeeInfo {
   e_emp_code: string;
@@ -364,16 +365,31 @@ const EmsPerformance: React.FC<EmsPerformanceProps> = () => {
                       {renderExpandableCell('weekly_next_actions', row.weekly_next_actions)}
                     </td>
                     <td className="border border-gray-300 w-25 text-center">
-                      <span className='bg-gray-700 text-white text-[11px] sm:text-[13px] rounded-full px-2 py-2 opacity-75 mr-2'>{getStatusDisplay(row.status)}</span></td>
+                      {(() => {
+                        const status = (getStatusDisplay(row.status) || '').toLowerCase();
+                        let color = 'bg-gray-700';
+                        if (status === 'in-progress') color = 'bg-orange-400';
+                        else if (status === 'pending' || status === 'yet-to-start') color = 'bg-red-500';
+                        else if (status === 'completed') color = 'bg-green-500';
+                        else if (status === 'reviewed') color = 'bg-blue-500';
+                        else if (status === 'not-submitted') color = 'bg-gray-500';
+                        return (
+                          <span className={`${color} text-white text-[11px] sm:text-[13px] rounded-full px-2 py-2 opacity-75 mr-2`}>
+                            {getStatusDisplay(row.status)}
+                          </span>
+                        );
+                      })()}
+                    </td>
                     <td className="border border-gray-300 px-2 py-2">{row.ws_submitted_on}</td>
                     <td className="border border-gray-300 px-2 py-2">{row.ws_week_number}</td>
                     <td className="border border-gray-300 px-2 py-2">{row.ws_available_hours}</td>
                     <td className="px-2 py-2">
                       <button
-                        className="bg-blue-900 hover:bg-blue-700 text-white px-2 sm:px-3 py-1 text-xs sm:text-sm rounded-md"
+                        className="bg-blue-400 hover:bg-blue-600 hover:text-white text-blue px-2 sm:px-3 py-1 text-xs sm:text-sm rounded-2xl flex items-center justify-center cursor-pointer"
                         onClick={() => handleWeeklyUpdateClick(row)}
+                        title="Edit"
                       >
-                        Edit
+                        <EditIcon fontSize="medium" />
                       </button>
                     </td>
                   </tr>
