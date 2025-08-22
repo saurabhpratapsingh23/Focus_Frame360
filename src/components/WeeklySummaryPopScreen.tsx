@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import jsPDF from 'jspdf';
 import FileDownloadOutlinedIcon from '@mui/icons-material/FileDownloadOutlined';
 
@@ -10,10 +11,10 @@ interface WeeklySummaryPopScreenProps {
 }
 
 const editableFields = [
- { key: 'ws_success', label: 'Weekly Achievements/Accomplishments'},
- { key: 'ws_challenges', label: 'Weekly Challenges/Roadblocks'}, 
- { key: 'ws_unfinished_tasks', label: 'Weekly Tasks started but not completed'},
- { key: 'ws_next_actions', label: 'Upcoming planned Tasks'}
+  { key: 'ws_success', label: 'Weekly Achievements/Accomplishments' },
+  { key: 'ws_challenges', label: 'Weekly Challenges/Roadblocks' },
+  { key: 'ws_unfinished_tasks', label: 'Weekly Tasks started but not completed' },
+  { key: 'ws_next_actions', label: 'Upcoming planned Tasks' },
 ];
 
 const topFields = [
@@ -21,7 +22,7 @@ const topFields = [
   { key: 'ws_start_date', label: 'Start Date' },
   { key: 'ws_end_date', label: 'End Date' },
   { key: 'ws_work_days', label: 'Work Days' },
-  { key: 'ws_Holidays', label: 'Holidays'},
+  { key: 'ws_Holidays', label: 'Holidays' },
   { key: 'ws_WFH', label: 'WFH' },
   { key: 'ws_WFO', label: 'WFO' },
   { key: 'ws_efforts', label: 'Efforts (In hrs)' },
@@ -34,7 +35,7 @@ const statusOptions = [
   { value: 'I', label: 'In-Progress' },
   { value: 'C', label: 'Completed' },
   { value: 'S', label: 'Reviewed' },
-  { value: 'N', label: 'Not Applicable'}
+  { value: 'N', label: 'Not Applicable' },
 ];
 
 // Convert status code to display value
@@ -42,7 +43,7 @@ const getStatusDisplayValue = (statusCode: string | null | undefined): string =>
   if (!statusCode) {
     return 'In-Progress'; // Default value for null/undefined
   }
-  
+
   switch (statusCode.toUpperCase()) {
     case 'I':
       return 'In-Progress';
@@ -62,7 +63,7 @@ const getStatusCode = (displayValue: string | null | undefined): string => {
   if (!displayValue) {
     return 'I'; // Default to In-Progress for null/undefined
   }
-  
+
   switch (displayValue) {
     case 'In-Progress':
       return 'I';
@@ -78,50 +79,53 @@ const getStatusCode = (displayValue: string | null | undefined): string => {
 const WeeklySummaryPopScreen: React.FC<WeeklySummaryPopScreenProps> = ({ isOpen, data, onClose, onSave }) => {
   const [form, setForm] = useState<any>({ ...data });
   const printRef = useRef<HTMLDivElement>(null);
+  const navigate = useNavigate();
 
-  // Download all displayed data as PDF
-  const handlePrintFunction = async () => {
-    // Convert all data to simple text format
-    let text = 'Weekly Summary Details\n\n';
-    text += topFields.map(({ key, label }) => `${label}: ${form[key] ?? ''}`).join('\n');
-    text += '\nStatus: ' + (form.ws_status_display || 'In-Progress') + '\n';
-    text += '\n';
-    text += editableFields.map(({ key, label }) => `${label}:\n${form[key] ?? ''}\n`).join('\n');
-
-    const pdf = new jsPDF({ orientation: 'p', unit: 'pt', format: 'a4' });
-    const lineHeight = 18;
-    const margin = 40;
-    const maxWidth = pdf.internal.pageSize.getWidth() - margin * 2;
-    let y = margin;
-    pdf.setFont('helvetica');
-    pdf.setFontSize(13);
-    const lines = pdf.splitTextToSize(text, maxWidth);
-    lines.forEach(line => {
-      if (y > pdf.internal.pageSize.getHeight() - margin) {
-        pdf.addPage();
-        y = margin;
-      }
-      pdf.text(line, margin, y);
-      y += lineHeight;
-    });
-    pdf.save('WeeklySummary.pdf');
+  // Redirect to WeeklyReport page with form data as state
+  const handleRedirectToReport = () => {
+    navigate('/app/weeklyreport', { state: { weeklyData: form } });
   };
 
+  // Original PDF download function kept if needed separately
+  // const handlePrintFunction = async () => {
+  //   let text = 'Weekly Summary Details\n\n';
+  //   text += topFields.map(({ key, label }) => `${label}: ${form[key] ?? ''}`).join('\n');
+  //   text += '\nStatus: ' + (form.ws_status_display || 'In-Progress') + '\n\n';
+  //   text += editableFields.map(({ key, label }) => `${label}:\n${form[key] ?? ''}\n`).join('\n');
+
+  //   const pdf = new jsPDF({ orientation: 'p', unit: 'pt', format: 'a4' });
+  //   const lineHeight = 18;
+  //   const margin = 40;
+  //   const maxWidth = pdf.internal.pageSize.getWidth() - margin * 2;
+  //   let y = margin;
+  //   pdf.setFont('helvetica');
+  //   pdf.setFontSize(13);
+  //   const lines = pdf.splitTextToSize(text, maxWidth);
+  //   lines.forEach((line) => {
+  //     if (y > pdf.internal.pageSize.getHeight() - margin) {
+  //       pdf.addPage();
+  //       y = margin;
+  //     }
+  //     pdf.text(line, margin, y);
+  //     y += lineHeight;
+  //   });
+  //   pdf.save('WeeklySummary.pdf');
+  // };
 
   useEffect(() => {
     // Only initialize form if data is available
     if (data && data.ws_status !== undefined) {
       // Initialize form with data and set status display value
       const statusDisplayValue = getStatusDisplayValue(data.ws_status);
-      setForm({ 
-        ...data, 
-        ws_status_display: statusDisplayValue 
+      setForm({
+        ...data,
+        ws_status_display: statusDisplayValue,
       });
     } else if (data) {
       // If data exists but no ws_status, set default
-      setForm({ 
-        ...data, 
-        ws_status_display: 'In-Progress' 
+      setForm({
+        ...data,
+        ws_status_display: 'In-Progress',
       });
     }
   }, [data]);
@@ -136,7 +140,6 @@ const WeeklySummaryPopScreen: React.FC<WeeklySummaryPopScreenProps> = ({ isOpen,
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
     if (onSave) {
-      // Only send required fields
       const payload = {
         ws_emp_id: form.ws_emp_id, // still send, just not shown
         ws_week_id: form.ws_week_id,
@@ -149,7 +152,7 @@ const WeeklySummaryPopScreen: React.FC<WeeklySummaryPopScreenProps> = ({ isOpen,
         ws_efforts: Number(form.ws_efforts),
         ws_leaves: Number(form.ws_leaves),
         ws_extra_days: Number(form.ws_extra_days),
-        ws_status: getStatusCode(form.ws_status_display), // Convert display value to status code
+        ws_status: getStatusCode(form.ws_status_display),
       };
       onSave(payload);
     }
@@ -157,16 +160,34 @@ const WeeklySummaryPopScreen: React.FC<WeeklySummaryPopScreenProps> = ({ isOpen,
 
   return (
     <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center">
-      <div ref={printRef} className="relative w-full max-w-[1400px] mx-auto my-8 bg-white rounded-lg shadow-lg p-6 overflow-y-auto max-h-[80vh] border border-gray-900 flex flex-col">
-        <h2 className="text-xl md:text-2xl font-bold  text-center text-white bg-gray-900 px-4 py-3 rounded-t-md shadow">
-          <span className="absolute top-8 right-9 cursor-pointer" onClick={handlePrintFunction}><FileDownloadOutlinedIcon/></span>Weekly Summary Details</h2>
-        {/* Top fields in a single line */}
+      <div
+        ref={printRef}
+        className="relative w-full max-w-[1400px] mx-auto my-8 bg-white rounded-lg shadow-lg p-6 overflow-y-auto max-h-[80vh] border border-gray-900 flex flex-col"
+      >
+        <h2 className="text-xl md:text-2xl font-bold  text-center text-white bg-gray-900 px-4 py-3 rounded-t-md shadow relative">
+          Weekly Summary Details
+          <span
+            className="absolute top-3 right-9 cursor-pointer"
+            onClick={handleRedirectToReport}
+            title="Open in WeeklyReport"
+          >
+            <FileDownloadOutlinedIcon />
+          </span>
+          {/* <span
+            className="absolute top-8 right-9 cursor-pointer"
+            onClick={handlePrintFunction}
+            title="Download PDF"
+          > */}
+            {/* <FileDownloadOutlinedIcon  /> */}
+          {/* </span> */}
+        </h2>
 
+        {/* Top fields in a single line */}
         <div className="flex flex-wrap mt-2 gap-4 mb-4">
           {topFields.map(({ key, label }) => (
             <div key={key} className="flex flex-col min-w-[70px]">
               <label className="font-bold mb-1 text-md">{label}</label>
-              {['ws_week_id', 'ws_start_date', 'ws_end_date','ws_work_days','ws_Holidays' ].includes(key) ? (
+              {['ws_week_id', 'ws_start_date', 'ws_end_date', 'ws_work_days', 'ws_Holidays'].includes(key) ? (
                 <div className="bg-gray-100 px-2 py-2 rounded text-gray-700 w-15 text-sm">{form[key]}</div>
               ) : (
                 <input
@@ -196,7 +217,7 @@ const WeeklySummaryPopScreen: React.FC<WeeklySummaryPopScreenProps> = ({ isOpen,
             </select>
           </div>
         </div>
-        
+
         <form onSubmit={handleSave} className="flex flex-col flex-1 space-y-2">
           {/* Editable fields */}
           {editableFields.map(({ key, label }) => (
@@ -212,8 +233,19 @@ const WeeklySummaryPopScreen: React.FC<WeeklySummaryPopScreenProps> = ({ isOpen,
             </div>
           ))}
           <div className="flex justify-end gap-2 mt-6 border-t pt-4">
-            <button type="button" className="px-4 py-2 rounded bg-gray-300 hover:bg-gray-400 text-sm font-medium" onClick={onClose}>Close</button>
-            <button type="submit" className="px-4 py-2 rounded bg-blue-800 hover:bg-blue-600 text-white text-sm font-medium">Save</button>
+            <button
+              type="button"
+              className="px-4 py-2 rounded bg-gray-300 hover:bg-gray-400 text-sm font-medium"
+              onClick={onClose}
+            >
+              Close
+            </button>
+            <button
+              type="submit"
+              className="px-4 py-2 rounded bg-blue-800 hover:bg-blue-600 text-white text-sm font-medium"
+            >
+              Save
+            </button>
           </div>
         </form>
       </div>

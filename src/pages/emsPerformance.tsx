@@ -124,7 +124,7 @@ const EmsPerformance: React.FC<EmsPerformanceProps> = () => {
         if (!res.ok) throw new Error(`Employee API error: ${res.status}`);
         return res.json();
       }),
-      fetch(`${API_BASE_URL}/pms/api/e/ws/${empId}`).then(res => {
+      fetch(`${API_BASE_URL}/pms/api/e/ws/${empId}/A`).then(res => {
         if (!res.ok) throw new Error(`WeeklySummary API error: ${res.status}`);
         return res.json();
       })

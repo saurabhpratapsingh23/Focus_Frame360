@@ -59,9 +59,9 @@ const Header: React.FC = () => {
     window.addEventListener('storage', handleStorage);
 
     // Listen for navigation or login (same tab)
-    const interval = setInterval(() => {
-      fetchEmployeeInfo();
-    }, 1000); // Poll every second for sessionStorage changes
+    // const interval = setInterval(() => {
+    //   fetchEmployeeInfo();
+    // }, 1000); // Poll every second for sessionStorage changes
 
     // Login time logic
     const loginTime = sessionStorage.getItem('lastLoginTime');
@@ -83,7 +83,7 @@ const Header: React.FC = () => {
 
     return () => {
       window.removeEventListener('storage', handleStorage);
-      clearInterval(interval);
+      // clearInterval(interval);
     };
   }, []);
 

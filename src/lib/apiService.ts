@@ -289,7 +289,7 @@ class ApiService {
       console.log(`Processing item ${index}:`, item);
       
       // Determine status based on week_status from API response
-      let status = item.week_status || 'NA';
+      const status = item.week_status || 'NA';
       
       return {
         weekStart: item.week_start_date || '',

@@ -31,13 +31,13 @@ interface Goal {
 }
 
 interface goalsSummary {
-  "goal_es_emp_id": number,
-  "goal_es_emp_code": string,
-  "goal_es_id": string,
-  "goal_es_title": string,
-  "goal_es_description": string,
-  "goal_es_effort": number,
-  "goal_es_efforts_percentage": number
+  goal_es_emp_id: number,
+  goal_es_emp_code: string,
+  goal_es_id: string,
+  goal_es_title: string,
+  goal_es_description: string,
+  goal_es_effort: number,
+  goal_es_efforts_percentage: number
 }
 
 // Helper function to generate group-based zebra striping classes
@@ -61,16 +61,25 @@ const GoalTable: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [popOpen, setPopOpen] = useState(false);
   const [selectedGoal, setSelectedGoal] = useState<Goal | null>(null);
+
+  // Pagination states for first table (Goals)
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
+
+  // Pagination states for second table (Goal Summary)
+  const [summaryPage, setSummaryPage] = useState(0);
+  const [summaryRowsPerPage, setSummaryRowsPerPage] = useState(10);
+
   // Filter and sort states
   const [filterWeek, setFilterWeek] = useState<string>('');
   const [filterGoalId, setFilterGoalId] = useState<string>('');
-  const [sortByWeek, setSortByWeek] = useState<'asc' | 'desc'>('asc');
   const [sortByGoalId, setSortByGoalId] = useState<'asc' | 'desc'>('asc');
 
   useEffect(() => {
-    // Get emp_id from sessionStorage
+    fetchGoals();
+  }, []);
+
+  const fetchGoals = () => {
     const empId = sessionStorage.getItem('e_emp_id');
     if (!empId) {
       setError('Employee ID not found. Please login again.');
@@ -87,7 +96,6 @@ const GoalTable: React.FC = () => {
       })
       .then(data => {
         const goalsData = data.goals || [];
-        // Sort by current month first, then descending order
         const sortedGoals = goalsData.sort((a: any, b: any) => {
           const currentDate = new Date();
           const currentMonth = currentDate.getMonth();
@@ -112,7 +120,7 @@ const GoalTable: React.FC = () => {
         setError(err.message || 'Failed to load goals');
         setLoading(false);
       });
-  }, []);
+  };
 
   // Filter, sort, and paginate displayedGoals
   const getFilteredSortedGoals = () => {
@@ -123,7 +131,6 @@ const GoalTable: React.FC = () => {
     if (filterGoalId) {
       filtered = filtered.filter(g => g.goal_id.trim().toLowerCase().includes(filterGoalId.trim().toLowerCase()));
     }
-    // Sort by goal_id alphabetically, regardless of week
     filtered = [...filtered].sort((a, b) => {
       const aId = a.goal_id.trim().toUpperCase();
       const bId = b.goal_id.trim().toUpperCase();
@@ -139,18 +146,22 @@ const GoalTable: React.FC = () => {
     ? filteredGoals.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
     : filteredGoals;
 
+  // Pagination for Goal Summary table
+  const paginatedSummary = summaryRowsPerPage > 0
+    ? goalsSummary.slice(summaryPage * summaryRowsPerPage, summaryPage * summaryRowsPerPage + summaryRowsPerPage)
+    : goalsSummary;
+
   if (loading) return <div className="flex justify-center items-center min-h-[120px] text-gray-600 text-base sm:text-lg">Loading goals...</div>;
   if (error) return <div className="flex justify-center items-center min-h-[120px] text-red-600 text-base sm:text-lg">{error}</div>;
 
   const handleUpdateClick = async (goal: Goal) => {
-    // Prepare payload for /pms/api/e/getwgrow
     const payload = {
       goal_rec_id: goal.goal_rec_id,
       emp_id: goal.goal_emp_id,
       emp_code: goal.goal_emp_code,
       week_number: goal.goal_week_number,
       co_id: goal.goals_week_co_id,
-      week_id: goal.goal_week_number, // If you have a separate week_id field, use that instead
+      week_id: goal.goal_week_number,
     };
     try {
       const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
@@ -164,7 +175,7 @@ const GoalTable: React.FC = () => {
         try {
           errorText = await res.text();
           console.error('Backend error response:', errorText);
-        } catch (e) {
+        } catch {
           console.error('Failed to read backend error response');
         }
         throw new Error('Failed to fetch goal row');
@@ -185,7 +196,6 @@ const GoalTable: React.FC = () => {
   const handlePopSubmit = async (updatedGoal: Goal) => {
     const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
     try {
-      // Prepare payload with all required fields
       const payload = {
         goal_rec_id: updatedGoal.goal_rec_id,
         goal_emp_id: updatedGoal.goal_emp_id,
@@ -208,21 +218,19 @@ const GoalTable: React.FC = () => {
         goal_target: updatedGoal.goal_target,
         goal_week_start_date: updatedGoal.goal_week_start_date,
         goal_week_end_date: updatedGoal.goal_week_end_date,
-        gaols_week_co_id: updatedGoal.goals_week_co_id, // Note: typo as per your JSON
+        gaols_week_co_id: updatedGoal.goals_week_co_id, // typo kept per your JSON
       };
       const res = await fetch(`${API_BASE_URL}/pms/api/e/postwgrow`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
-        
       });
       if (!res.ok) {
         let errorText = '';
         try {
           errorText = await res.text();
           console.error('Backend error response:', errorText);
-          
-        } catch (e) {
+        } catch {
           console.error('Failed to read backend error response');
         }
         throw new Error('Failed to update goal');
@@ -230,78 +238,15 @@ const GoalTable: React.FC = () => {
       toast.success('Goal updated successfully!');
       setPopOpen(false);
       setSelectedGoal(null);
-      // Refresh the table by re-fetching data
-      refreshGoals();
+      fetchGoals(); // refresh after update
     } catch (err: any) {
       toast.error(err.message || 'Update failed');
     }
   };
 
-  // Add refreshGoals function to re-fetch goals and summary
-  const refreshGoals = () => {
-    // Get emp_id from sessionStorage
-    const empId = sessionStorage.getItem('e_emp_id');
-    if (!empId) {
-      setError('Employee ID not found. Please login again.');
-      setLoading(false);
-      return;
-    }
-    
-    const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
-    setLoading(true);
-    setError(null);
-    fetch(`${API_BASE_URL}/pms/api/e/wg/${empId}`)
-      .then(res => {
-        if (!res.ok) throw new Error(`Goals API error: ${res.status}`);
-        return res.json();
-      })
-      .then(data => {
-        const goalsData = data.goals || [];
-        
-        // Sort by current month first, then descending order
-        const sortedGoals = goalsData.sort((a: any, b: any) => {
-          const currentDate = new Date();
-          const currentMonth = currentDate.getMonth();
-          const currentYear = currentDate.getFullYear();
-          
-          const dateA = new Date(a.goal_week_start_date);
-          const dateB = new Date(b.goal_week_start_date);
-          
-          const monthA = dateA.getMonth();
-          const monthB = dateB.getMonth();
-          const yearA = dateA.getFullYear();
-          const yearB = dateB.getFullYear();
-          
-          // Check if both dates are in current month and year
-          const isCurrentMonthA = monthA === currentMonth && yearA === currentYear;
-          const isCurrentMonthB = monthB === currentMonth && yearB === currentYear;
-          
-          // Current month data should come first
-          if (isCurrentMonthA && !isCurrentMonthB) return -1;
-          if (!isCurrentMonthA && isCurrentMonthB) return 1;
-          
-          // If both are current month or both are not, sort by date descending
-          return dateB.getTime() - dateA.getTime();
-        });
-        
-        setGoals(sortedGoals);
-        setGoalsSummary(data.goalsSummary || []);
-        
-
-        
-        setLoading(false);
-      })
-      .catch(err => {
-        setError(err.message || 'Failed to load goals');
-        setLoading(false);
-      });
-  };
-
-
-
   // Grouped row classes for zebra striping by goal_id
   const goalRowClasses = getGroupedRowClasses(paginatedGoals, g => g.goal_id.trim());
-  const summaryRowClasses = getGroupedRowClasses(goalsSummary, s => s.goal_es_id.trim());
+  const summaryRowClasses = getGroupedRowClasses(paginatedSummary, s => s.goal_es_id.trim());
 
   // Helper to map rating codes to color names
   const mapRating = (val: string) => {
@@ -314,6 +259,7 @@ const GoalTable: React.FC = () => {
 
   return (
     <div className="space-y-8 max-w-8xl mx-auto p-2 sm:p-4">
+
       {/* Table 1: Goals */}
       <div>
         <div className="mb-2">
@@ -326,7 +272,7 @@ const GoalTable: React.FC = () => {
                   className="border rounded px-1 py-0.5 text-xs bg-white text-gray-900"
                   value={filterWeek}
                   onChange={e => {
-                    setCurrentPage(1);
+                    setPage(0);
                     setFilterWeek(e.target.value);
                   }}
                 >
@@ -344,22 +290,11 @@ const GoalTable: React.FC = () => {
                   placeholder="Search"
                   value={filterGoalId}
                   onChange={e => {
-                    setCurrentPage(1);
+                    setPage(0);
                     setFilterGoalId(e.target.value);
                   }}
                 />
               </div>
-              {/* <div className="flex flex-col gap-1">
-                <label className="text-xs font-semibold">Sort Week</label>
-                <select
-                  className="border rounded px-1 py-0.5 text-xs bg-white text-gray-900"
-                  value={sortByWeek}
-                  onChange={e => setSortByWeek(e.target.value as 'asc' | 'desc')}
-                >
-                  <option value="asc">Asc</option>
-                  <option value="desc">Desc</option>
-                </select>
-              </div> */}
               <div className="flex flex-col gap-1">
                 <label className="text-xs font-semibold">Sort ID</label>
                 <select
@@ -422,7 +357,6 @@ const GoalTable: React.FC = () => {
                     {mapRating(g.goal_own_rating) === 'Red' && (
                         <span className="inline-block w-4 h-4 rounded-full bg-red-500 align-middle" title="Red"></span>
                       )}
-                    {/* <span style={{ fontSize: '0.8em', color: '#888', marginLeft: 4 }}>{g.goal_own_rating}</span> */}
                   </td>
                   <td className="border border-gray-300 px-1 sm:px-2 py-1 text-center text-xs sm:text-sm">
                     {mapRating(g.goal_auditor_rating) === 'Green' && (
@@ -434,7 +368,6 @@ const GoalTable: React.FC = () => {
                     {mapRating(g.goal_auditor_rating) === 'Red' && (
                         <span className="inline-block w-4 h-4 rounded-full bg-red-500 align-middle" title="Red"></span>
                       )}
-                    {/* <span style={{ fontSize: '0.8em', color: '#888', marginLeft: 4 }}>{g.goal_auditor_rating}</span> */}
                   </td>
                   <td className="border border-gray-300 px-1 sm:px-2 py-1 whitespace-pre-line text-xs sm:text-sm">{g.goal_auditor_comments}</td>
                   <td className="border border-gray-300 w-25 text-center">
@@ -455,37 +388,36 @@ const GoalTable: React.FC = () => {
                     <button className="bg-blue-400 hover:bg-blue-600 hover:text-white text-blue px-2 sm:px-3 py-1 text-xs sm:text-sm rounded-2xl flex items-center justify-center cursor-pointer" onClick={() => handleUpdateClick(g)}
                       title="Edit">
                         <EditIcon fontSize="small" />
-                        </button>
+                      </button>
                   </td>
                 </tr>
               ))}
             </tbody>
+            <tfoot>
+              <tr>
+                <TablePagination
+                  colSpan={17}
+                  className="bg-gray-400 rounded-2xl"
+                  rowsPerPageOptions={[5, 10, 25, { label: 'All', value: -1 }]}
+                  count={filteredGoals.length}
+                  rowsPerPage={rowsPerPage}
+                  page={page}
+                  slotProps={{
+                    select: {
+                      inputProps: { 'aria-label': 'rows per page' },
+                      native: true,
+                    },
+                  }}
+                  onPageChange={(event, newPage) => setPage(newPage)}
+                  onRowsPerPageChange={event => {
+                    setRowsPerPage(parseInt(event.target.value, 10));
+                    setPage(0);
+                  }}
+                  ActionsComponent={TablePaginationActions}
+                />
+              </tr>
+            </tfoot>
           </table>
-        </div>
-        
-        {/* Table Pagination */}
-        <div className="flex justify-end mt-2 p-2 rounded-b-xl">
-
-        <TablePagination
-        className="bg-gray-400 rounded-2xl"
-          rowsPerPageOptions={[5, 10, 25, { label: 'All', value: -1 }]}
-          colSpan={3}
-          count={filteredGoals.length}
-          rowsPerPage={rowsPerPage}
-          page={page}
-          slotProps={{
-            select: {
-              inputProps: { 'aria-label': 'rows per page' },
-              native: true,
-            },
-          }}
-          onPageChange={(event, newPage) => setPage(newPage)}
-          onRowsPerPageChange={event => {
-            setRowsPerPage(parseInt(event.target.value, 10));
-            setPage(0);
-          }}
-          ActionsComponent={TablePaginationActions}
-        />
         </div>
       </div>
 
@@ -501,11 +433,10 @@ const GoalTable: React.FC = () => {
                 <th className=" px-2 py-1">Description</th>
                 <th className=" px-2 py-1">Efforts</th>
                 <th className="rounded-tr-lg px-2 py-1">Effort Percentage</th>
-                {/* <th className="px-2 py-1">Update Summary</th> */}
               </tr>
             </thead>
             <tbody className='border border-gray-200 '>
-              {goalsSummary.map((summary, i) => (
+              {paginatedSummary.map((summary, i) => (
                 <tr key={i} className={summaryRowClasses[i]}>
                   <td className="px-1 sm:px-2 py-2 w-40 text-xs sm:text-sm">{summary.goal_es_id}</td>
                   <td className="px-1 sm:px-2 py-2 font-bold text-xs sm:text-sm">{summary.goal_es_title}</td>
@@ -515,9 +446,33 @@ const GoalTable: React.FC = () => {
                 </tr>
               ))}
             </tbody>
+            <tfoot>
+              <tr>
+                <TablePagination
+                  colSpan={5}
+                  className="bg-gray-400 rounded-2xl"
+                  rowsPerPageOptions={[5, 10, 25, { label: 'All', value: -1 }]}
+                  count={goalsSummary.length}
+                  rowsPerPage={summaryRowsPerPage}
+                  page={summaryPage}
+                  slotProps={{
+                    select: {
+                      inputProps: { 'aria-label': 'rows per page' },
+                      native: true,
+                    },
+                  }}
+                  onPageChange={(event, newPage) => setSummaryPage(newPage)}
+                  onRowsPerPageChange={event => {
+                    setSummaryRowsPerPage(parseInt(event.target.value, 10));
+                    setSummaryPage(0);
+                  }}
+                />
+              </tr>
+            </tfoot>
           </table>
         </div>
       </div>
+
       <PopScreen isOpen={popOpen} goal={selectedGoal} onClose={handlePopClose} onSubmit={handlePopSubmit} />
     </div>
   );

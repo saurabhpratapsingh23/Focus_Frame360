@@ -1,5 +1,5 @@
 import React from 'react';
-import { weekly_goals } from '../lib/mockAPIData';
+import { weekly_goals } from '../lib/ApiServer';
 
 interface KpiTableProps {
   weeklyGoals: any[];

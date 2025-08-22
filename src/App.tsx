@@ -9,6 +9,7 @@ import MyGoalsDashboard from './pages/MyGoalsDashboard'
 import EmployeeRoleManagement from './pages/EmployeeRoleManagement'
 import WeeklyGoalsAction from './pages/WeeklyGoalsAction'
 import Profile from './components/Profile'
+import WeeklyReport from './components/WeeklyReport'
 import './App.css'
 
 function App() {
@@ -29,6 +30,7 @@ function App() {
           <Route path="role" element={<EmployeeRoleManagement />} />
           <Route path="actions" element={<WeeklyGoalsAction />} />
           <Route path="profile" element={<Profile />} />
+          <Route path="weeklyreport" element={<WeeklyReport />} />
         </Route>
       </Routes>
     </Router>
