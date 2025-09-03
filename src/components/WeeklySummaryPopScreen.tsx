@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import jsPDF from 'jspdf';
-import FileDownloadOutlinedIcon from '@mui/icons-material/FileDownloadOutlined';
+// import jsPDF from 'jspdf';
+// import FileDownloadOutlinedIcon from '@mui/icons-material/FileDownloadOutlined';
 
 interface WeeklySummaryPopScreenProps {
   isOpen: boolean;
@@ -166,13 +166,21 @@ const WeeklySummaryPopScreen: React.FC<WeeklySummaryPopScreenProps> = ({ isOpen,
       >
         <h2 className="text-xl md:text-2xl font-bold  text-center text-white bg-gray-900 px-4 py-3 rounded-t-md shadow relative">
           Weekly Summary Details
-          <span
-            className="absolute top-3 right-9 cursor-pointer"
+          {/* <button
+            className="border border-white absolute top-3 right-9 cursor-pointer"
             onClick={handleRedirectToReport}
             title="Open in WeeklyReport"
           >
+            
             <FileDownloadOutlinedIcon />
-          </span>
+          </button> */}
+<button className="absolute top-[7px] right-0.5 inline-flex items-center justify-center p-0.5 mb-2 me-2  overflow-hidden text-sm font-medium text-gray-900 rounded-lg group bg-gradient-to-br from-green-400 to-blue-600 group-hover:from-green-400 group-hover:to-blue-600 hover:text-white dark:text-white focus:ring-4 focus:outline-none focus:ring-green-200 dark:focus:ring-green-800 cursor-pointer" onClick={handleRedirectToReport}
+            title="Preview of WeeklyReport">
+<span className="relative px-5 py-2.5 transition-all ease-in duration-75 bg-white dark:bg-gray-900 rounded-md group-hover:bg-transparent group-hover:dark:bg-transparent">
+  Preview
+</span>
+</button>
+
           {/* <span
             className="absolute top-8 right-9 cursor-pointer"
             onClick={handlePrintFunction}
